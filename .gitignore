@@ -15,3 +15,6 @@ __pycache__/
 
 # Autres fichiers temporaires
 *.sqlite3
+readme.txt
+schema_architecture_gestion_temps.png
+
