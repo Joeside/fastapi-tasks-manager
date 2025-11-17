@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+{% block title %}Liste des tâches{% endblock %}
+
+{% block content %}
+<h1 class="text-xl font-bold mb-4">Liste des tâches</h1>
+
+<!-- Formulaire d'ajout -->
+<div class="card mb-8">
+  <div class="text-sm font-semibold mb-4">Ajouter une tâche</div>
+
+  <form method="post" action="/list/add" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+    <div class="flex flex-col">
+      <label class="font-medium mb-1">Titre *</label>
+      <input type="text" name="title" required
+             placeholder="Ex: Préparer la réunion de lundi" />
+    </div>
+
+    <div class="flex flex-col md:col-span-2">
+      <label class="font-medium mb-1">Description</label>
+      <textarea name="description" rows="2"
+                placeholder="Notes, contexte, détails…"></textarea>
+    </div>
+
+    <div class="flex flex-col">
+      <label class="font-medium mb-1">Échéance</label>
+      <input type="date" name="due_date" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label class="font-medium mb-1">Priorisation</label>
+      <label class="checkbox-wrapper">
+        <input type="checkbox" name="urgent" />
+        <span>Urgent</span>
+        <span></span><span></span><span></span>
+        <input type="checkbox" name="important" />
+        <span>Important</span>
+      </label>
+    </div>
+
+    <div class="md:col-span-2 flex gap-3 items-center">
+      <button class="btn btn-primary" type="submit">
+        Ajouter
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Barre de filtres & tri (sans A/B/C) -->
+<div class="card mb-4">
+  <form method="get" class="grid grid-cols-1 md:grid-cols-6 gap-3 text-sm">
+    <!-- Statut -->
+    <div class="flex flex-col">
+      <label class="font-medium mb-1">Statut</label>
+      <select name="status_f">
+        <option value="all"  {{ 'selected' if status_f == 'all' else '' }}>Tous</option>
+        <option value="todo" {{ 'selected' if status_f == 'todo' else '' }}>À faire</option>
+        <option value="done" {{ 'selected' if status_f == 'done' else '' }}>Fait</option>
+      </select>
+    </div>
+
+    <!-- Urgent -->
+    <div class="flex flex-col">
+      <label class="font-medium mb-1">Urgent</label>
+      <select name="urgent_f">
+        <option value="all" {{ 'selected' if urgent_f == 'all' else '' }}>Tous</option>
+        <option value="yes" {{ 'selected' if urgent_f == 'yes' else '' }}>Oui</option>
+        <option value="no"  {{ 'selected' if urgent_f == 'no' else '' }}>Non</option>
+      </select>
+    </div>
+
+    <!-- Important -->
+    <div class="flex flex-col">
+      <label class="font-medium mb-1">Important</label>
+      <select name="important_f">
+        <option value="all" {{ 'selected' if important_f == 'all' else '' }}>Tous</option>
+        <option value="yes" {{ 'selected' if important_f == 'yes' else '' }}>Oui</option>
+        <option value="no"  {{ 'selected' if important_f == 'no' else '' }}>Non</option>
+      </select>
+    </div>
+
+    <!-- Recherche texte -->
+    <div class="flex flex-col md:col-span-2">
+      <label class="font-medium mb-1">Recherche</label>
+      <input type="text" name="q" value="{{ q }}" placeholder="Titre ou description" />
+    </div>
+
+    <!-- Tri -->
+    <div class="flex flex-col md:col-span-2">
+      <label class="font-medium mb-1">Trier par</label>
+      <select name="sort">
+        <option value="created_desc" {{ 'selected' if sort == 'created_desc' else '' }}>Création (récent → ancien)</option>
+        <option value="due_asc"      {{ 'selected' if sort == 'due_asc' else '' }}>Échéance (proche → loin)</option>
+        <option value="due_desc"     {{ 'selected' if sort == 'due_desc' else '' }}>Échéance (loin → proche)</option>
+      </select>
+    </div>
+
+    <!-- Actions -->
+    <div class="md:col-span-4 flex items-end gap-3">
+      <button class="btn btn-primary" type="submit">Appliquer</button>
+      <a class="btn btn-secondary" href="/list">Réinitialiser</a>
+      <span class="text-xs text-slate-500">
+        {{ tasks|length }} tâche(s) affichée(s) sur {{ total_count }}.
+      </span>
+    </div>
+  </form>
+</div>
+
+<!-- Filtres actifs (sans priorité) -->
+{% if has_filters %}
+<div class="mb-4 text-sm">
+  <div class="flex items-center flex-wrap gap-2">
+    <span class="text-slate-500">Filtres actifs :</span>
+
+    {% if status_f != 'all' %}
+      <a class="chip" href="{{ urls_clear['status_f'] }}">
+        Statut :
+        {% if status_f == 'todo' %} À faire {% elif status_f == 'done' %} Fait {% else %} {{ status_f }} {% endif %}
+        <span class="chip-x">×</span>
+      </a>
+    {% endif %}
+
+    {% if urgent_f != 'all' %}
+      <a class="chip" href="{{ urls_clear['urgent_f'] }}">
+        Urgent : {% if urgent_f == 'yes' %} Oui {% else %} Non {% endif %}
+        <span class="chip-x">×</span>
+      </a>
+    {% endif %}
+
+    {% if important_f != 'all' %}
+      <a class="chip" href="{{ urls_clear['important_f'] }}">
+        Important : {% if important_f == 'yes' %} Oui {% else %} Non {% endif %}
+        <span class="chip-x">×</span>
+      </a>
+    {% endif %}
+
+    {% if q %}
+      <a class="chip" href="{{ urls_clear['q'] }}">
+        Recherche : “{{ q }}”
+        <span class="chip-x">×</span>
+      </a>
+    {% endif %}
+      <a class="chip chip-clear" href="{{ urls_clear['all'] }}">Tout effacer</a>
+  </div>
+</div>
+{% endif %}
+
+<!-- Tableau -->
+<div class="card overflow-hidden">
+  <table class="table text-sm">
+    <thead>
+      <tr>
+        <th>Titre</th>
+        <th>Priorité</th>
+        <th>Action</th>
+        <th>Échéance</th>
+        <th>Statut</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if tasks|length == 0 %}
+      <tr>
+        <td colspan="7" class="py-4 text-center text-slate-400">
+          Aucune tâche à afficher.
+        </td>
+      </tr>
+      {% else %}
+        {% for section in due_sections %}
+        {# Sections par échéance (tâches à faire uniquement) #}
+          {% if section.tasks|length %}
+            <!-- Ligne de section -->
+            <tr class="section-row">
+              <td colspan="7" class="py-2 px-3 font-semibold text-xs uppercase tracking-wide text-slate-500">
+                {{ section.label }}
+              </td>
+            </tr>
+
+            {% for t in section.tasks %}
+            <tr class="{% if t.quadrant == 1 and t.due_status == 'overdue' %}row-critical{% endif %}">
+            <!-- Titre + badge d’échéance + etc. (ta version actuelle) -->
+                <td>
+                  <div class="title-row">
+                    <span class="title-text">{{ t.title }}</span>
+
+                    {% if t.due_status == 'overdue' %}
+                      <span class="badge badge-due-overdue" title="En retard">Retard</span>
+                    {% elif t.due_status == 'today' %}
+                      <span class="badge badge-due-today" title="Échéance aujourd'hui">Auj.</span>
+                    {% elif t.due_status == 'soon' %}
+                      <span class="badge badge-due-soon" title="Échéance cette semaine">7 j</span>
+                    {% endif %}
+                  </div>
+
+                  {% if t.description %}
+                    <div class="text-xs text-slate-500 mt-1">{{ t.description }}</div>
+                  {% endif %}
+                </td>
+
+                <td class="text-center">
+
+                  {% if t.urgent %}
+                    <span class="prio-icon prio-urgent" title="Urgent">🔥</span>
+                  {% endif %}
+
+                  {% if t.important %}
+                    <span class="prio-icon prio-important" title="Important">⭐</span>
+                  {% endif %}
+
+                  {% if not t.urgent and not t.important %}
+                    <span class="prio-none">•</span>
+                  {% endif %}
+
+                </td>
+
+              <td>
+                {% if t.quadrant == 1 %}
+                  <span class="badge badge-quadrant badge-q1">Faire</span>
+                {% elif t.quadrant == 2 %}
+                  <span class="badge badge-quadrant badge-q2">Planifier</span>
+                {% elif t.quadrant == 3 %}
+                  <span class="badge badge-quadrant badge-q3">Déléguer</span>
+                {% else %}
+                  <span class="badge badge-quadrant badge-q4">Éliminer</span>
+                {% endif %}
+              </td>
+
+              <td>
+                {% if t.due_date %}
+                  <span class="inline-flex items-center gap-1">
+                    <span class="text-xs">📅</span>
+                    <span>{{ t.due_date }}</span>
+                  </span>
+                {% else %}
+                  <span class="text-slate-400 text-xs">–</span>
+                {% endif %}
+              </td>
+
+              <td>
+                {% if t.status == "done" %}
+                  <span class="badge badge-done">Fait</span>
+                {% else %}
+                  <span class="badge badge-todo">À faire</span>
+                {% endif %}
+              </td>
+
+              <td>
+                {% if t.status != "done" %}
+                  <form method="post" action="/list/complete/{{ t.id }}">
+                    <button class="btn btn-primary">Terminer</button>
+                  </form>
+                {% else %}
+                  <form method="post" action="/list/reopen/{{ t.id }}">
+                    <button class="btn btn-secondary">Rétablir</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+            
+            {# Nouvelle section : tâches terminées #}
+            {% if done_tasks|length %}
+              <tr class="section-row">
+                <td colspan="7" class="py-2 px-3 font-semibold text-xs uppercase tracking-wide text-slate-500">
+                  Tâches terminées
+                </td>
+              </tr>
+
+              {% for t in done_tasks %}
+              <tr>
+                <td>
+                  <div class="font-medium flex items-center gap-2">
+                    {{ t.title }}
+                  </div>
+                  {% if t.description %}
+                    <div class="text-xs text-slate-500 mt-1">{{ t.description }}</div>
+                  {% endif %}
+                </td>
+
+                <td class="text-center">
+                  {% if t.urgent %}
+                    <span class="prio-icon prio-urgent" title="Urgent">🔥</span>
+                  {% endif %}
+                  {% if t.important %}
+                    <span class="prio-icon prio-important" title="Important">⭐</span>
+                  {% endif %}
+                  {% if not t.urgent and not t.important %}
+                    <span class="prio-none">•</span>
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% if t.quadrant == 1 %}
+                    <span class="badge badge-quadrant badge-q1">Q1 – Faire</span>
+                  {% elif t.quadrant == 2 %}
+                    <span class="badge badge-quadrant badge-q2">Q2 – Planifier</span>
+                  {% elif t.quadrant == 3 %}
+                    <span class="badge badge-quadrant badge-q3">Q3 – Déléguer</span>
+                  {% else %}
+                    <span class="badge badge-quadrant badge-q4">Q4 – Éliminer</span>
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% if t.due_date %}
+                    <span class="inline-flex items-center gap-1">
+                      <span class="text-xs">📅</span>
+                      <span>{{ t.due_date }}</span>
+                    </span>
+                  {% else %}
+                    <span class="text-slate-400 text-xs">–</span>
+                  {% endif %}
+                </td>
+
+                <td>
+                  <span class="badge badge-done">Fait</span>
+                </td>
+
+                <td>
+                  <form method="post" action="/list/reopen/{{ t.id }}">
+                    <button class="btn btn-secondary">Rétablir</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            {% endif %}
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+
+{% endblock %}

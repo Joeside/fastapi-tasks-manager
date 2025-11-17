@@ -1,0 +1,621 @@
+/* ======== THEME OLIVE + CREME ======== */
+
+/* Clair par défaut */
+:root {
+  /* Couleurs principales */
+  --bg: #F8F5EF;                /* crème très doux */
+  --fg: #2F332B;                /* gris olive foncé */
+  --card-bg: #FFFFFF;           /* blanc surélevé */
+  --muted: #8A8F86;             /* gris olive moyen */
+  --border: #DDD8CE;            /* beige/gris très pâle */
+
+  /* Accent olive premium */
+  --accent: #6B7B3C;            /* olive foncé, riche */
+  --accent-hover: #55622E;      /* olive encore plus profond */
+
+  /* Olive clair pour certains éléments */
+  --accent-light: #DDE3CE;      /* olive très pâle / crème verdâtre */
+
+  /* Tableaux */
+  --table-head-bg: #EEE9DF;     /* beige chaud */
+  --table-head-fg: #4F514A;     /* gris chaud foncé */
+
+  /* Badges */
+  --badge-todo-bg: #E7F0D8;     /* vert olive pastel */
+  --badge-todo-fg: #465A2B;     /* olive foncé */
+  --badge-done-bg: #EFEDE6;     /* crème/gris pour tâches faites */
+  --badge-done-fg: #6B6E66;
+
+  /* Effets */
+  --radius: 0.75rem;
+  --shadow: 0 2px 10px rgba(0,0,0,0.06);
+
+  /* Largeur app */
+  --app-width: 64rem;
+}
+
+/* DARK MODE — Olive profond */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1A1D17;              /* vert-noir profond */
+    --fg: #E6E7E4;              /* gris clair chaud */
+    --card-bg: #242820;         /* vert très foncé */
+    --muted: #9DA093;
+    --border: #373A33;
+
+    --accent: #A2B56D;          /* olive clair pour contraster */
+    --accent-hover: #C2D492;
+
+    --table-head-bg: #2D3029;
+    --table-head-fg: #D7D8D2;
+
+    --badge-todo-bg: #37422D;
+    --badge-todo-fg: #DDE7C5;
+    --badge-done-bg: #2A2D26;
+    --badge-done-fg: #B5B7AE;
+  }
+}
+
+/* ==== Layout global ==== */
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+nav.app-nav {
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Lien actif dans la navigation */
+nav a {
+  transition: 0.2s;
+}
+nav a.active {
+  color: var(--accent) !important;
+  border-color: var(--accent) !important;
+  border-bottom: 2px solid var(--accent);
+}
+
+/* ==== Composants ==== */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 1rem;
+}
+
+/* Boutons olive */
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+/* Boutons secondaires */
+.btn-secondary {
+  background: var(--badge-done-bg);
+  color: var(--badge-done-fg);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover {
+  filter: brightness(1.06);
+}
+
+/* Badges */
+.badge-todo {
+  background: var(--badge-todo-bg);
+  color: var(--badge-todo-fg);
+}
+.badge-done {
+  background: var(--badge-done-bg);
+  color: var(--badge-done-fg);
+}
+
+/* Badges de quadrants : largeur uniforme */
+.badge-quadrant {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  min-width: 7.5rem;   /* ajuste au goût : 7.0–8.0rem selon ton rendu */
+  white-space: nowrap;
+}
+
+/* Quadrants Eisenhower */
+.badge-q1 {
+  background: #F97373;  /* rouge doux */
+  color: #FFF7F7;
+}
+
+.badge-q2 {
+  background: var(--badge-todo-bg);
+  color: var(--badge-todo-fg);
+}
+
+.badge-q3 {
+  background: #FACC6B;  /* jaune/ambre doux */
+  color: #7C4B00;
+}
+
+.badge-q4 {
+  background: var(--badge-done-bg);
+  color: var(--badge-done-fg);
+}
+/* Badges d'échéance */
+.badge-due-overdue {
+  background: #f97373;
+  color: #fff7f7;
+}
+
+.badge-due-today {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.badge-due-soon {
+  background: #facc6b;
+  color: #7c4b00;
+}
+
+/* Ligne critique : Q1 + en retard */
+.row-critical {
+  box-shadow: inset 3px 0 0 #f97373;
+  background: rgba(249, 115, 115, 0.06);
+}
+
+/* Ligne de section (groupes d'échéances) */
+.section-row td {
+  background: rgba(0,0,0,0.02);
+}
+@media (prefers-color-scheme: dark) {
+  .section-row td {
+    background: rgba(255,255,255,0.03);
+  }
+}
+
+/* Chips */
+.chip {
+  background: var(--badge-done-bg);
+  color: var(--badge-done-fg);
+  border-color: var(--border);
+}
+.chip:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Tableaux */
+.table {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+}
+.table thead th {
+  background: var(--table-head-bg);
+  color: var(--table-head-fg);
+}
+/* Largeurs & alignement pour la liste des tâches */
+.table thead th:nth-child(1),
+.table tbody td:nth-child(1) {
+  width: 35%;
+}
+
+/* Priorité, Quadrant, Statut, Action : colonnes étroites et centrées */
+.table thead th:nth-child(2),
+.table thead th:nth-child(3),
+.table thead th:nth-child(4),
+.table thead th:nth-child(5),
+.table thead th:nth-child(6),
+.table tbody td:nth-child(2),
+.table tbody td:nth-child(3),
+.table tbody td:nth-child(4),
+.table tbody td:nth-child(5),
+.table tbody td:nth-child(6) {
+  width: 14%;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Colonne Échéance : un peu plus large mais compacte */
+.table thead th:nth-child(5),
+.table tbody td:nth-child(5) {
+  width: 15%;
+  white-space: nowrap;
+}
+
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b1220;             /* bleu nuit très foncé */
+    --fg: #e2e8f0;             /* slate-200 */
+    --card-bg: #0f172a;        /* slate-900 */
+    --muted: #94a3b8;          /* slate-400 */
+    --border: #1f2937;         /* slate-800 */
+    --accent: #34d399;         /* emerald-400 pour plus de contraste */
+    --accent-hover: #10b981;   /* emerald-500 */
+
+    --nav-bg: #0b1220;
+    --table-head-bg: #111827;  /* slate-900 */
+    --table-head-fg: #cbd5e1;  /* slate-300 */
+
+    --badge-todo-bg: #064e3b;  /* emerald-900 */
+    --badge-todo-fg: #a7f3d0;  /* emerald-200 */
+    --badge-done-bg: #1f2937;  /* slate-800 */
+    --badge-done-fg: #cbd5e1;  /* slate-300 */
+  }
+}
+
+/* ==== CHIPS (Filtres actifs) ==== */
+.chip { margin-top: 0.25rem; margin-bottom: 0.25rem; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--badge-todo-bg);      /* fond vert clair par défaut */
+  color: var(--badge-todo-fg);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;                  /* forme “pilule” */
+  border: 1px solid var(--border);
+  text-decoration: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: all 0.15s ease-in-out;
+}
+
+.chip:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent-hover);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.chip .chip-x {
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1;
+  opacity: 0.8;
+  margin-left: 2px;
+}
+
+.chip .chip-x:hover {
+  opacity: 1;
+}
+
+/* Variante pour le lien “Tout effacer” */
+.chip-clear {
+  background: transparent;
+  color: var(--muted);
+  border-style: dashed;
+}
+.chip-clear:hover {
+  background: var(--badge-done-bg);
+  color: var(--fg);
+  border-color: var(--accent);
+  box-shadow: none;
+}
+/* ===========================
+   INPUTS & SELECTS (THÉME)
+   =========================== */
+
+input[type="text"],
+input[type="search"],
+input[type="date"],
+input[type="number"],
+textarea,
+select {
+  background: var(--card-bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hover */
+input:hover,
+textarea:hover,
+select:hover {
+  border-color: var(--accent);
+}
+
+/* Focus */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-light);
+}
+
+/* Placeholder en mode clair/sombre */
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+/* =======================================
+   CHECKBOX (clair / sombre / premium)
+   ======================================= */
+
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+/* Masquer la véritable checkbox native */
+.checkbox-wrapper input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  width: 1rem;
+  height: 1rem;
+
+  border-radius: 0.25rem;
+  border: 2px solid var(--border);
+
+  background: var(--card-bg);
+  cursor: pointer;
+
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+/* Survol */
+.checkbox-wrapper input[type="checkbox"]:hover {
+  border-color: var(--accent);
+}
+
+/* État coché */
+.checkbox-wrapper input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Le ✓ */
+.checkbox-wrapper input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  color: white;
+  font-size: 1.15rem;
+  font-weight: bold;
+  top: -3px;
+  left: 1px;
+}
+
+/* ==== Resets utiles + largeur stable (évite le “saut” de scroll) ==== */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+html { overflow-y: scroll; }              /* réserve la gouttière */
+body { background: var(--bg); color: var(--fg); }
+
+/* Conteneurs (alignement identique sur toutes les pages) */
+nav > .container, main.container {
+  max-width: var(--app-width);
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* ==== Composants réutilisables ==== */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1rem;
+  border: 1px solid var(--border);
+}
+
+.btn {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.8rem;
+  text-align: center;
+  line-height: 1.2;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  min-width: 90px; /* harmonise Terminer/Rétablir */
+  border: 1px solid transparent;
+}
+
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-hover); }
+
+.btn-secondary {
+  background: var(--badge-done-bg);
+  color: var(--badge-done-fg);
+  border-color: var(--border);
+}
+.btn-secondary:hover { filter: brightness(1.05); }
+
+.badge {
+  display: inline-block;
+  min-width: 70px;  /* harmonise “À faire” / “Fait” */
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  line-height: 1.2;
+}
+.badge-todo { background: var(--badge-todo-bg); color: var(--badge-todo-fg); }
+.badge-done { background: var(--badge-done-bg); color: var(--badge-done-fg); }
+
+/* Tableaux */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.table thead th {
+  background: var(--table-head-bg);
+  color: var(--table-head-fg);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+}
+.table tbody td {
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid var(--border);
+  vertical-align: top;
+}
+
+/* Nav */
+.app-nav {
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--border);
+}
+.app-nav a {
+  transition: color .2s, border-color .2s;
+}
+
+/* Focus & motion */
+:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+/* ===== Overrides manuels par data-theme ===== */
+
+/* Forcer clair */
+:root[data-theme="light"] {
+  --bg: #F8F5EF;
+  --fg: #2F332B;
+  --card-bg: #FFFFFF;
+  --muted: #8A8F86;
+  --border: #DDD8CE;
+
+  --accent: #6B7B3C;
+  --accent-hover: #55622E;
+  --accent-light: #DDE3CE;
+
+  --table-head-bg: #EEE9DF;
+  --table-head-fg: #4F514A;
+
+  --badge-todo-bg: #E7F0D8;
+  --badge-todo-fg: #465A2B;
+  --badge-done-bg: #EFEDE6;
+  --badge-done-fg: #6B6E66;
+}
+
+/* Forcer sombre */
+:root[data-theme="dark"] {
+  --bg: #1A1D17;
+  --fg: #E6E7E4;
+  --card-bg: #242820;
+  --muted: #9DA093;
+  --border: #373A33;
+
+  --accent: #A2B56D;
+  --accent-hover: #C2D492;
+  --accent-light: #37422D;
+
+  --table-head-bg: #2D3029;
+  --table-head-fg: #D7D8D2;
+
+  --badge-todo-bg: #37422D;
+  --badge-todo-fg: #DDE7C5;
+  --badge-done-bg: #2A2D26;
+  --badge-done-fg: #B5B7AE;
+}
+
+
+/* ====== Boutons segmentés de thème ====== */
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  background: var(--badge-done-bg);
+  border-radius: 999px;
+  padding: 0.12rem;
+  border: 1px solid var(--border);
+}
+
+.theme-pill {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.theme-pill:hover {
+  color: var(--fg);
+}
+
+.theme-pill.is-active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+/* Icônes Priorité — Urgent / Important */
+.prio-icon {
+  font-size: 1rem;
+  line-height: 1;
+  margin: 0 2px;
+  cursor: help; /* montre un pointeur info */
+}
+
+.prio-urgent {
+  color: #ff4c4c; /* rouge feu */
+  filter: drop-shadow(0 0 2px rgba(255, 76, 76, 0.4));
+}
+
+.prio-important {
+  color: #ffd700; /* or */
+  filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.4));
+}
+
+.prio-none {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+/* Alignement colonne Priorité */
+.table thead th:nth-child(2),
+.table tbody td:nth-child(2) {
+  text-align: center;
+  width: 8%;
+  white-space: nowrap;
+}
+
+/* Ligne de titre avec badge aligné à droite */
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+/* Le titre doit pouvoir s'étendre sans pousser le badge en dessous */
+.title-text {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Le badge (Auj., Retard, etc.) reste compact */
+.title-row .badge {
+  white-space: nowrap;
+  margin-left: 1rem;
+}

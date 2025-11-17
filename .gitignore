@@ -1,0 +1,17 @@
+# Environnement virtuel
+app/.venv/
+venv/
+.venv/
+
+# Base de données locale
+app/data/*.db
+
+# Python cache
+__pycache__/
+*.pyc
+
+# VS Code config
+.vscode/
+
+# Autres fichiers temporaires
+*.sqlite3

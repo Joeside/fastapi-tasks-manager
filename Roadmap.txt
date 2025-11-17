@@ -1,0 +1,53 @@
+Gestion du temps – Roadmap produit
+│
+├── Phase 1 — MVP Fonctionnel ✅ (complétée)
+│   ├── Modèle Task (CRUD complet)
+│   ├── Pages : Liste / Matrice Eisenhower / Statistiques
+│   ├── Base SQLite locale
+│   ├── Ajout / Terminer / Rétablir
+│   └── Design minimal Tailwind
+│
+├── Phase 2 — UX & Design 🎨 (en cours)
+│   ├── Refonte visuelle cohérente
+│   │   ├── Création fichier app.css (design system)
+│   │   ├── Styles unifiés : boutons, badges, cartes
+│   │   ├── Thèmes clair/sombre automatiques
+│   │   └── Harmonisation typographie et couleurs
+│   ├── Navigation
+│   │   ├── Barre fixe avec onglet actif
+│   │   └── Amélioration responsive mobile
+│   ├── Ergonomie
+│   │   ├── Validation visuelle formulaires
+│   │   └── Messages de confirmation légers
+│   └── Petites animations (transition des statuts)
+│
+├── Phase 3 — Fonctionnalités Avancées ⚙️
+│   ├── Filtres & tri
+│   │   ├── Par priorité / statut / échéance
+│   │   └── Barre d’outils en haut de la liste
+│   ├── Gestion du temps
+│   │   ├── Échéances + alertes couleur
+│   │   ├── Tâches récurrentes (hebdo, mensuelles)
+│   │   └── Chrono ou suivi de temps optionnel
+│   ├── Catégorisation
+│   │   ├── Tags / Projets
+│   │   └── Filtrage par projet
+│   ├── Statistiques améliorées
+│   │   ├── Graphiques hebdomadaires
+│   │   └── Moyenne de productivité
+│   └── Personnalisation
+│       ├── Page “Paramètres” (nom, thème, préférences)
+│       └── Sauvegarde locale automatique
+│
+├── Phase 4 — Tests utilisateurs 🧪
+│   ├── Hébergement sur Render (ou Railway)
+│   ├── Comptes de test pour collègues
+│   ├── Collecte de feedback intégrée
+│   └── Améliorations basées sur retours
+│
+└── Phase 5 — Version SaaS 🚀
+    ├── Authentification / Comptes utilisateurs
+    ├── API REST propre (backend / frontend séparé)
+    ├── Tableau de bord multi-utilisateurs
+    ├── Sauvegarde cloud (PostgreSQL)
+    └── Monétisation / Page marketing

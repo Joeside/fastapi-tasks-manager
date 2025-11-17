@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Statistiques{% endblock %}
+
+{% block content %}
+<h1 class="text-xl font-bold mb-6">Statistiques</h1>
+
+<!-- KPIs -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+  <div class="card mb-8">
+    <div class="text-xs text-slate-500">Total tâches</div>
+    <div class="text-2xl font-semibold">{{ total }}</div>
+  </div>
+  <div class="card mb-8">
+    <div class="text-xs text-slate-500">À faire</div>
+    <div class="text-2xl font-semibold">{{ todo }}</div>
+  </div>
+  <div class="card mb-8">
+    <div class="text-xs text-slate-500">Terminées</div>
+    <div class="text-2xl font-semibold">{{ done }}</div>
+  </div>
+  <div class="card mb-8">
+    <div class="text-xs text-slate-500">% complété</div>
+    <div class="text-2xl font-semibold">{{ completion_rate }}%</div>
+  </div>
+</div>
+
+<!-- Répartition Eisenhower (Toutes) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+  <div class="card mb-8">
+    <div class="font-semibold mb-2">Matrice d’Eisenhower – Toutes tâches</div>
+    <div class="grid grid-cols-2 gap-4 text-sm">
+      <div class="border rounded p-3">
+        <div class="font-medium text-red-700">Faire</div>
+        <div class="text-2xl">{{ q_all.ii }}</div>
+      </div>
+      <div class="border rounded p-3">
+        <div class="font-medium text-amber-700">Planifier</div>
+        <div class="text-2xl">{{ q_all.inu }}</div>
+      </div>
+      <div class="border rounded p-3">
+        <div class="font-medium text-sky-700">Déléguer</div>
+        <div class="text-2xl">{{ q_all.uni }}</div>
+      </div>
+      <div class="border rounded p-3">
+        <div class="font-medium text-slate-700">Éliminer</div>
+        <div class="text-2xl">{{ q_all.nn }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Répartition Eisenhower (À faire) -->
+  <div class="card mb-8">
+    <div class="font-semibold mb-2">Matrice d’Eisenhower – À faire seulement</div>
+    <div class="grid grid-cols-2 gap-4 text-sm">
+      <div class="border rounded p-3">
+        <div class="font-medium text-red-700">Faire</div>
+        <div class="text-2xl">{{ q_todo.ii }}</div>
+      </div>
+      <div class="border rounded p-3">
+        <div class="font-medium text-amber-700">Planifier</div>
+        <div class="text-2xl">{{ q_todo.inu }}</div>
+      </div>
+      <div class="border rounded p-3">
+        <div class="font-medium text-sky-700">Déléguer</div>
+        <div class="text-2xl">{{ q_todo.uni }}</div>
+      </div>
+      <div class="border rounded p-3">
+        <div class="font-medium text-slate-700">Éliminer</div>
+        <div class="text-2xl">{{ q_todo.nn }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Priorités et “terminées récemment” -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <div class="card mb-8">
+    <div class="font-semibold mb-2">Terminé (7 derniers jours)</div>
+    <div class="text-3xl font-semibold">{{ done_last_7 }}</div>
+    <div class="text-xs text-slate-500">Basé sur la date de complétion</div>
+  </div>
+
+  <div class="card mb-8">
+    <div class="font-semibold mb-2">Astuce</div>
+    <p class="text-sm text-slate-600">
+      Concentre-toi d’abord sur “Important & Urgent”, puis planifie les “Important, NON urgent”. 
+      Élimine ou délègue ce qui n’est ni urgent ni important.
+    </p>
+  </div>
+</div>
+
+{% endblock %}
