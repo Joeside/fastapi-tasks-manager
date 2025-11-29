@@ -5,232 +5,232 @@
 <h1 class="text-xl font-bold mb-6">Matrice d'Eisenhower</h1>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div class="card">
-	  <div class="font-semibold mb-2">Q1 – À faire</div>
-	  {% if q1|length == 0 %}
+	<div class="card">
+		<div class="font-semibold mb-2">Q1 – À faire</div>
+		{% if q1|length == 0 %}
 		<div class="text-xs text-slate-400">Rien pour l’instant.</div>
-	  {% else %}
+		{% else %}
 		<ul class="space-y-2 text-sm">
-		  {% for t in q1 %}
+			{% for t in q1 %}
 			<li class="border-b border-slate-200/40 pb-2 last:border-b-0">
-			  <!-- Ligne titre + icônes de priorité + badge d'échéance aligné à droite -->
-			  <div class="title-row">
-				<!-- Gauche : titre + 🔥⭐ -->
-				<div class="title-text font-medium flex items-center gap-2">
-				  {{ t.title }}
-				  <span class="flex items-center gap-1">
-					{% if t.urgent %}
-					  <span class="prio-icon prio-urgent" title="Urgent">🔥</span>
-					{% endif %}
-					{% if t.important %}
-					  <span class="prio-icon prio-important" title="Important">⭐</span>
-					{% endif %}
-					{% if not t.urgent and not t.important %}
-					  <span class="prio-none">•</span>
-					{% endif %}
-				  </span>
+				<!-- Ligne titre + icônes de priorité + badge d'échéance aligné à droite -->
+				<div class="title-row">
+					<!-- Gauche : titre + 🔥⭐ -->
+					<div class="title-text font-medium flex items-center gap-2">
+						{{ t.title }}
+						<span class="flex items-center gap-1">
+							{% if t.urgent %}
+							<span class="prio-icon prio-urgent" title="Urgent">🔥</span>
+							{% endif %}
+							{% if t.important %}
+							<span class="prio-icon prio-important" title="Important">⭐</span>
+							{% endif %}
+							{% if not t.urgent and not t.important %}
+							<span class="prio-none">•</span>
+							{% endif %}
+						</span>
+					</div>
+
+					<!-- Droite : badge d'échéance -->
+					<div class="flex items-center gap-1">
+						{% if t.due_status == 'overdue' %}
+						<span class="badge badge-due-overdue" title="En retard">Retard</span>
+						{% elif t.due_status == 'today' %}
+						<span class="badge badge-due-today" title="Échéance aujourd'hui">Auj.</span>
+						{% elif t.due_status == 'soon' %}
+						<span class="badge badge-due-soon" title="Échéance cette semaine">7 j</span>
+						{% endif %}
+					</div>
 				</div>
 
-				<!-- Droite : badge d'échéance -->
-				<div class="flex items-center gap-1">
-				  {% if t.due_status == 'overdue' %}
-					<span class="badge badge-due-overdue" title="En retard">Retard</span>
-				  {% elif t.due_status == 'today' %}
-					<span class="badge badge-due-today" title="Échéance aujourd'hui">Auj.</span>
-				  {% elif t.due_status == 'soon' %}
-					<span class="badge badge-due-soon" title="Échéance cette semaine">7 j</span>
-				  {% endif %}
+				<!-- Ligne infos : date + statut -->
+				<div class="text-xs text-slate-500 flex items-center gap-2 mt-1">
+					{% if t.due_date %}
+					<span class="inline-flex items-center gap-1">
+						<span>📅</span> <span>{{ t.due_date }}</span>
+					</span>
+					{% else %}
+					<span>Sans échéance</span>
+					{% endif %}
+					{% if t.status == "done" %}
+					<span class="badge badge-done">Fait</span>
+					{% endif %}
 				</div>
-			  </div>
-
-			  <!-- Ligne infos : date + statut -->
-			  <div class="text-xs text-slate-500 flex items-center gap-2 mt-1">
-				{% if t.due_date %}
-				  <span class="inline-flex items-center gap-1">
-					<span>📅</span> <span>{{ t.due_date }}</span>
-				  </span>
-				{% else %}
-				  <span>Sans échéance</span>
-				{% endif %}
-				{% if t.status == "done" %}
-				  <span class="badge badge-done">Fait</span>
-				{% endif %}
-			  </div>
 			</li>
-		  {% endfor %}
+			{% endfor %}
 		</ul>
-	  {% endif %}
+		{% endif %}
 	</div>
 
-    <div class="card">
-	  <div class="font-semibold mb-2">Q2 – Planifier</div>
-	  {% if q2|length == 0 %}
+	<div class="card">
+		<div class="font-semibold mb-2">Q2 – Planifier</div>
+		{% if q2|length == 0 %}
 		<div class="text-xs text-slate-400">Rien pour l’instant.</div>
-	  {% else %}
+		{% else %}
 		<ul class="space-y-2 text-sm">
-		  {% for t in q2 %}
+			{% for t in q2 %}
 			<li class="border-b border-slate-200/40 pb-2 last:border-b-0">
-			  <!-- Ligne titre + icônes de priorité + badge d'échéance aligné à droite -->
-			  <div class="title-row">
-				<!-- Gauche : titre + 🔥⭐ -->
-				<div class="title-text font-medium flex items-center gap-2">
-				  {{ t.title }}
-				  <span class="flex items-center gap-1">
-					{% if t.urgent %}
-					  <span class="prio-icon prio-urgent" title="Urgent">🔥</span>
-					{% endif %}
-					{% if t.important %}
-					  <span class="prio-icon prio-important" title="Important">⭐</span>
-					{% endif %}
-					{% if not t.urgent and not t.important %}
-					  <span class="prio-none">•</span>
-					{% endif %}
-				  </span>
+				<!-- Ligne titre + icônes de priorité + badge d'échéance aligné à droite -->
+				<div class="title-row">
+					<!-- Gauche : titre + 🔥⭐ -->
+					<div class="title-text font-medium flex items-center gap-2">
+						{{ t.title }}
+						<span class="flex items-center gap-1">
+							{% if t.urgent %}
+							<span class="prio-icon prio-urgent" title="Urgent">🔥</span>
+							{% endif %}
+							{% if t.important %}
+							<span class="prio-icon prio-important" title="Important">⭐</span>
+							{% endif %}
+							{% if not t.urgent and not t.important %}
+							<span class="prio-none">•</span>
+							{% endif %}
+						</span>
+					</div>
+
+					<!-- Droite : badge d'échéance -->
+					<div class="flex items-center gap-1">
+						{% if t.due_status == 'overdue' %}
+						<span class="badge badge-due-overdue" title="En retard">Retard</span>
+						{% elif t.due_status == 'today' %}
+						<span class="badge badge-due-today" title="Échéance aujourd'hui">Auj.</span>
+						{% elif t.due_status == 'soon' %}
+						<span class="badge badge-due-soon" title="Échéance cette semaine">7 j</span>
+						{% endif %}
+					</div>
 				</div>
 
-				<!-- Droite : badge d'échéance -->
-				<div class="flex items-center gap-1">
-				  {% if t.due_status == 'overdue' %}
-					<span class="badge badge-due-overdue" title="En retard">Retard</span>
-				  {% elif t.due_status == 'today' %}
-					<span class="badge badge-due-today" title="Échéance aujourd'hui">Auj.</span>
-				  {% elif t.due_status == 'soon' %}
-					<span class="badge badge-due-soon" title="Échéance cette semaine">7 j</span>
-				  {% endif %}
+				<!-- Ligne infos : date + statut -->
+				<div class="text-xs text-slate-500 flex items-center gap-2 mt-1">
+					{% if t.due_date %}
+					<span class="inline-flex items-center gap-1">
+						<span>📅</span> <span>{{ t.due_date }}</span>
+					</span>
+					{% else %}
+					<span>Sans échéance</span>
+					{% endif %}
+					{% if t.status == "done" %}
+					<span class="badge badge-done">Fait</span>
+					{% endif %}
 				</div>
-			  </div>
-
-			  <!-- Ligne infos : date + statut -->
-			  <div class="text-xs text-slate-500 flex items-center gap-2 mt-1">
-				{% if t.due_date %}
-				  <span class="inline-flex items-center gap-1">
-					<span>📅</span> <span>{{ t.due_date }}</span>
-				  </span>
-				{% else %}
-				  <span>Sans échéance</span>
-				{% endif %}
-				{% if t.status == "done" %}
-				  <span class="badge badge-done">Fait</span>
-				{% endif %}
-			  </div>
 			</li>
-		  {% endfor %}
+			{% endfor %}
 		</ul>
-	  {% endif %}
+		{% endif %}
 	</div>
 
-    <div class="card">
-	  <div class="font-semibold mb-2">Q3 – Déléguer</div>
-	  {% if q3|length == 0 %}
+	<div class="card">
+		<div class="font-semibold mb-2">Q3 – Déléguer</div>
+		{% if q3|length == 0 %}
 		<div class="text-xs text-slate-400">Rien pour l’instant.</div>
-	  {% else %}
+		{% else %}
 		<ul class="space-y-2 text-sm">
-		  {% for t in q3 %}
+			{% for t in q3 %}
 			<li class="border-b border-slate-200/40 pb-2 last:border-b-0">
-			  <!-- Ligne titre + icônes de priorité + badge d'échéance aligné à droite -->
-			  <div class="title-row">
-				<!-- Gauche : titre + 🔥⭐ -->
-				<div class="title-text font-medium flex items-center gap-2">
-				  {{ t.title }}
-				  <span class="flex items-center gap-1">
-					{% if t.urgent %}
-					  <span class="prio-icon prio-urgent" title="Urgent">🔥</span>
-					{% endif %}
-					{% if t.important %}
-					  <span class="prio-icon prio-important" title="Important">⭐</span>
-					{% endif %}
-					{% if not t.urgent and not t.important %}
-					  <span class="prio-none">•</span>
-					{% endif %}
-				  </span>
+				<!-- Ligne titre + icônes de priorité + badge d'échéance aligné à droite -->
+				<div class="title-row">
+					<!-- Gauche : titre + 🔥⭐ -->
+					<div class="title-text font-medium flex items-center gap-2">
+						{{ t.title }}
+						<span class="flex items-center gap-1">
+							{% if t.urgent %}
+							<span class="prio-icon prio-urgent" title="Urgent">🔥</span>
+							{% endif %}
+							{% if t.important %}
+							<span class="prio-icon prio-important" title="Important">⭐</span>
+							{% endif %}
+							{% if not t.urgent and not t.important %}
+							<span class="prio-none">•</span>
+							{% endif %}
+						</span>
+					</div>
+
+					<!-- Droite : badge d'échéance -->
+					<div class="flex items-center gap-1">
+						{% if t.due_status == 'overdue' %}
+						<span class="badge badge-due-overdue" title="En retard">Retard</span>
+						{% elif t.due_status == 'today' %}
+						<span class="badge badge-due-today" title="Échéance aujourd'hui">Auj.</span>
+						{% elif t.due_status == 'soon' %}
+						<span class="badge badge-due-soon" title="Échéance cette semaine">7 j</span>
+						{% endif %}
+					</div>
 				</div>
 
-				<!-- Droite : badge d'échéance -->
-				<div class="flex items-center gap-1">
-				  {% if t.due_status == 'overdue' %}
-					<span class="badge badge-due-overdue" title="En retard">Retard</span>
-				  {% elif t.due_status == 'today' %}
-					<span class="badge badge-due-today" title="Échéance aujourd'hui">Auj.</span>
-				  {% elif t.due_status == 'soon' %}
-					<span class="badge badge-due-soon" title="Échéance cette semaine">7 j</span>
-				  {% endif %}
+				<!-- Ligne infos : date + statut -->
+				<div class="text-xs text-slate-500 flex items-center gap-2 mt-1">
+					{% if t.due_date %}
+					<span class="inline-flex items-center gap-1">
+						<span>📅</span> <span>{{ t.due_date }}</span>
+					</span>
+					{% else %}
+					<span>Sans échéance</span>
+					{% endif %}
+					{% if t.status == "done" %}
+					<span class="badge badge-done">Fait</span>
+					{% endif %}
 				</div>
-			  </div>
-
-			  <!-- Ligne infos : date + statut -->
-			  <div class="text-xs text-slate-500 flex items-center gap-2 mt-1">
-				{% if t.due_date %}
-				  <span class="inline-flex items-center gap-1">
-					<span>📅</span> <span>{{ t.due_date }}</span>
-				  </span>
-				{% else %}
-				  <span>Sans échéance</span>
-				{% endif %}
-				{% if t.status == "done" %}
-				  <span class="badge badge-done">Fait</span>
-				{% endif %}
-			  </div>
 			</li>
-		  {% endfor %}
+			{% endfor %}
 		</ul>
-	  {% endif %}
+		{% endif %}
 	</div>
 
-    <div class="card">
-	  <div class="font-semibold mb-2">Q4 – Éliminer</div>
-	  {% if q4|length == 0 %}
+	<div class="card">
+		<div class="font-semibold mb-2">Q4 – Éliminer</div>
+		{% if q4|length == 0 %}
 		<div class="text-xs text-slate-400">Rien pour l’instant.</div>
-	  {% else %}
+		{% else %}
 		<ul class="space-y-2 text-sm">
-		  {% for t in q4 %}
+			{% for t in q4 %}
 			<li class="border-b border-slate-200/40 pb-2 last:border-b-0">
-			  <!-- Ligne titre + icônes de priorité + badge d'échéance aligné à droite -->
-			  <div class="title-row">
-				<!-- Gauche : titre + 🔥⭐ -->
-				<div class="title-text font-medium flex items-center gap-2">
-				  {{ t.title }}
-				  <span class="flex items-center gap-1">
-					{% if t.urgent %}
-					  <span class="prio-icon prio-urgent" title="Urgent">🔥</span>
-					{% endif %}
-					{% if t.important %}
-					  <span class="prio-icon prio-important" title="Important">⭐</span>
-					{% endif %}
-					{% if not t.urgent and not t.important %}
-					  <span class="prio-none">•</span>
-					{% endif %}
-				  </span>
+				<!-- Ligne titre + icônes de priorité + badge d'échéance aligné à droite -->
+				<div class="title-row">
+					<!-- Gauche : titre + 🔥⭐ -->
+					<div class="title-text font-medium flex items-center gap-2">
+						{{ t.title }}
+						<span class="flex items-center gap-1">
+							{% if t.urgent %}
+							<span class="prio-icon prio-urgent" title="Urgent">🔥</span>
+							{% endif %}
+							{% if t.important %}
+							<span class="prio-icon prio-important" title="Important">⭐</span>
+							{% endif %}
+							{% if not t.urgent and not t.important %}
+							<span class="prio-none">•</span>
+							{% endif %}
+						</span>
+					</div>
+
+					<!-- Droite : badge d'échéance -->
+					<div class="flex items-center gap-1">
+						{% if t.due_status == 'overdue' %}
+						<span class="badge badge-due-overdue" title="En retard">Retard</span>
+						{% elif t.due_status == 'today' %}
+						<span class="badge badge-due-today" title="Échéance aujourd'hui">Auj.</span>
+						{% elif t.due_status == 'soon' %}
+						<span class="badge badge-due-soon" title="Échéance cette semaine">7 j</span>
+						{% endif %}
+					</div>
 				</div>
 
-				<!-- Droite : badge d'échéance -->
-				<div class="flex items-center gap-1">
-				  {% if t.due_status == 'overdue' %}
-					<span class="badge badge-due-overdue" title="En retard">Retard</span>
-				  {% elif t.due_status == 'today' %}
-					<span class="badge badge-due-today" title="Échéance aujourd'hui">Auj.</span>
-				  {% elif t.due_status == 'soon' %}
-					<span class="badge badge-due-soon" title="Échéance cette semaine">7 j</span>
-				  {% endif %}
+				<!-- Ligne infos : date + statut -->
+				<div class="text-xs text-slate-500 flex items-center gap-2 mt-1">
+					{% if t.due_date %}
+					<span class="inline-flex items-center gap-1">
+						<span>📅</span> <span>{{ t.due_date }}</span>
+					</span>
+					{% else %}
+					<span>Sans échéance</span>
+					{% endif %}
+					{% if t.status == "done" %}
+					<span class="badge badge-done">Fait</span>
+					{% endif %}
 				</div>
-			  </div>
-
-			  <!-- Ligne infos : date + statut -->
-			  <div class="text-xs text-slate-500 flex items-center gap-2 mt-1">
-				{% if t.due_date %}
-				  <span class="inline-flex items-center gap-1">
-					<span>📅</span> <span>{{ t.due_date }}</span>
-				  </span>
-				{% else %}
-				  <span>Sans échéance</span>
-				{% endif %}
-				{% if t.status == "done" %}
-				  <span class="badge badge-done">Fait</span>
-				{% endif %}
-			  </div>
 			</li>
-		  {% endfor %}
+			{% endfor %}
 		</ul>
-	  {% endif %}
+		{% endif %}
 	</div>
 
 </div>

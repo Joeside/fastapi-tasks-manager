@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Depends, Form, status
+from fastapi import FastAPI, Request, Depends, Form, status, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -412,5 +412,53 @@ def reopen_task_from_list(
 
     task_in = schemas.TaskUpdate(status="todo")
     updated = crud.update_task(db, task_id, task_in)
+
+    return RedirectResponse(url="/list", status_code=status.HTTP_303_SEE_OTHER)
+
+
+# Modifier des tâches existantes
+@app.get("/list/edit/{task_id}", response_class=HTMLResponse)
+def edit_task_page(
+    task_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    # On va chercher la tâche directement
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Tâche introuvable")
+
+    return templates.TemplateResponse(
+        "edit_task.html",
+        {
+            "request": request,
+            "task": task,
+        },
+    )
+
+
+@app.post("/list/edit/{task_id}")
+def edit_task_submit(
+    task_id: int,
+    title: str = Form(...),
+    description: str = Form(""),
+    due_date: str = Form(""),
+    urgent: bool = Form(False),
+    important: bool = Form(False),
+    db: Session = Depends(get_db),
+):
+    from . import schemas
+
+    task_in = schemas.TaskUpdate(
+        title=title,
+        description=description if description else None,
+        due_date=due_date if due_date else None,
+        urgent=urgent,
+        important=important,
+    )
+
+    updated = crud.update_task(db, task_id, task_in)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Tâche introuvable")
 
     return RedirectResponse(url="/list", status_code=status.HTTP_303_SEE_OTHER)
