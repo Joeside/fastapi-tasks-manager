@@ -2,7 +2,7 @@
 {% block title %}Liste des tâches{% endblock %}
 
 {% block content %}
-<h1 class="text-xl font-bold mb-4">Liste des tâches</h1>
+<h1 class="text-xl font-bold mb-3">Liste des tâches</h1>
 
 <!-- Formulaire d'ajout -->
 <div class="card mb-8">
@@ -26,14 +26,20 @@
 
     <div class="flex flex-col gap-2">
       <label class="font-medium mb-1">Priorisation</label>
-      <label class="checkbox-wrapper">
-        <input type="checkbox" name="urgent" />
-        <span>Urgent</span>
-        <span></span><span></span><span></span>
-        <input type="checkbox" name="important" />
-        <span>Important</span>
-      </label>
+
+      <div class="flex gap-4">
+        <label class="checkbox-wrapper">
+          <input type="checkbox" name="urgent" />
+          <span>Urgent</span>
+        </label>
+
+        <label class="checkbox-wrapper">
+          <input type="checkbox" name="important" />
+          <span>Important</span>
+        </label>
+      </div>
     </div>
+
 
     <div class="md:col-span-2 flex gap-3 items-center">
       <button class="btn btn-primary" type="submit">
@@ -144,7 +150,7 @@
 {% endif %}
 
 <!-- Tableau -->
-<div class="card overflow-hidden">
+<div class="card card-table overflow-hidden">
   <table class="table text-sm">
     <thead>
       <tr>
@@ -159,7 +165,7 @@
     <tbody>
       {% if tasks|length == 0 %}
       <tr>
-        <td colspan="7" class="py-4 text-center text-slate-400">
+        <td colspan="6" class="py-4 text-center text-slate-400">
           Aucune tâche à afficher.
         </td>
       </tr>
@@ -169,7 +175,7 @@
       {% if section.tasks|length %}
       <!-- Ligne de section -->
       <tr class="section-row">
-        <td colspan="7" class="py-2 px-3 font-semibold text-xs uppercase tracking-wide text-slate-500">
+        <td colspan="6" class="py-2 px-3 font-semibold text-xs uppercase tracking-wide text-slate-500">
           {{ section.label }}
         </td>
       </tr>
@@ -266,7 +272,7 @@
       {# Nouvelle section : tâches terminées #}
       {% if done_tasks|length %}
       <tr class="section-row">
-        <td colspan="7" class="py-2 px-3 font-semibold text-xs uppercase tracking-wide text-slate-500">
+        <td colspan="6" class="py-2 px-3 font-semibold text-xs uppercase tracking-wide text-slate-500">
           Tâches terminées
         </td>
       </tr>
@@ -323,7 +329,7 @@
 
         <td>
           <form method="post" action="/list/reopen/{{ t.id }}">
-            <button class="btn btn-secondary">Rétablir</button>
+            <button class="btn btn-secondary btn-sm w-full">Rétablir</button>
           </form>
         </td>
       </tr>

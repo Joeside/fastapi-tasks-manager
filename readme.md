@@ -1,3 +1,5 @@
+![CI](https://github.com/Joeside/fastapi-tasks-manager/actions/workflows/ci.yml/badge.svg)
+
 FastAPI Tasks Manager
 
 Un gestionnaire de tâches minimaliste, rapide, et organisé, basé sur FastAPI + SQLAlchemy + Jinja2

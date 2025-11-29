@@ -2,41 +2,54 @@
 
 {% block content %}
 <div class="page">
-    <h1 class="page-title mb-4">Modifier la tâche</h1>
+    <h1 class="text-xl font-bold mb-3">Modifier la tâche</h1>
 
-    <div class="card max-w-xl">
-        <form method="post" action="/list/edit/{{ task.id }}" class="flex flex-col gap-4">
+    <div class="card edit-card">
+        <form method="post" action="/list/edit/{{ task.id }}" class="space-y-6">
 
-            <div>
-                <label class="form-label" for="title">Titre</label>
-                <input id="title" type="text" name="title" value="{{ task.title }}" required>
+            <!-- Titre -->
+            <div class="edit-row">
+                <label class="form-label edit-row-label" for="title">Titre</label>
+                <div class="edit-row-field">
+                    <input id="title" type="text" name="title" value="{{ task.title }}" required>
+                </div>
             </div>
 
-            <div>
-                <label class="form-label" for="description">Description</label>
-                <textarea id="description" name="description" rows="3">{{ task.description or '' }}</textarea>
+            <!-- Description -->
+            <div class="edit-row">
+                <label class="form-label edit-row-label" for="description">Description</label>
+                <div class="edit-row-field">
+                    <textarea id="description" name="description" rows="3">{{ task.description or '' }}</textarea>
+                </div>
             </div>
 
-            <div>
-                <label class="form-label" for="due_date">Échéance</label>
-                <input id="due_date" type="date" name="due_date" value="{{ task.due_date or '' }}">
+            <!-- Échéance -->
+            <div class="edit-row">
+                <label class="form-label edit-row-label" for="due_date">Échéance</label>
+                <div class="edit-row-field">
+                    <input id="due_date" type="date" name="due_date" value="{{ task.due_date or '' }}">
+                </div>
             </div>
 
-            <div class="flex flex-col gap-2">
-                <label class="font-medium mb-1">Priorisation</label>
-
-                <label class="checkbox-wrapper">
-                    <input type="checkbox" name="urgent" {% if task.urgent %}checked{% endif %}>
-                    <span>Urgent 🔥</span>
-                </label>
-
-                <label class="checkbox-wrapper">
-                    <input type="checkbox" name="important" {% if task.important %}checked{% endif %}>
-                    <span>Important ⭐</span>
-                </label>
+            <!-- Priorisation -->
+            <div class="edit-row">
+                <span class="form-label edit-row-label">Priorisation</span>
+                <div class="edit-row-field">
+                    <div class="flex gap-4">
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" name="urgent" {% if task.urgent %}checked{% endif %}>
+                            <span>Urgent 🔥</span>
+                        </label>
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" name="important" {% if task.important %}checked{% endif %}>
+                            <span>Important ⭐</span>
+                        </label>
+                    </div>
+                </div>
             </div>
 
-            <div class="flex justify-end gap-2 mt-2">
+            <!-- Actions -->
+            <div class="edit-actions">
                 <a href="/list" class="btn btn-secondary">Annuler</a>
                 <button type="submit" class="btn btn-primary">
                     Enregistrer

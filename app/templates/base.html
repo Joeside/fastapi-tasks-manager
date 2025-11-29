@@ -1,89 +1,94 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Gestion du temps{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/app.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Gestion du temps{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/static/app.css">
 </head>
+
 <body class="bg-slate-100 text-slate-800">
 
-<!-- Barre de navigation -->
-<nav class="app-nav">
-  <div class="container flex items-center justify-between py-3">
-    <div class="flex items-center gap-6 text-sm font-semibold">
-      <a href="/list" class="{% if request.url.path == '/list' %}active{% endif %} pb-1">Liste</a>
-      <a href="/matrix" class="{% if request.url.path == '/matrix' %}active{% endif %} pb-1">Matrice</a>
-      <a href="/stats" class="{% if request.url.path == '/stats' %}active{% endif %} pb-1">Statistiques</a>
-    </div>
+  <!-- Barre de navigation -->
+  <nav class="app-nav navbar">
+    <div class="container flex items-center justify-between py-3">
+      <div class="flex items-center gap-6 text-sm font-semibold">
+        <a href="/list" class="{% if request.url.path == '/list' %}active{% endif %} pb-1">Liste</a>
+        <a href="/matrix" class="{% if request.url.path == '/matrix' %}active{% endif %} pb-1">Matrice</a>
+        <a href="/stats" class="{% if request.url.path == '/stats' %}active{% endif %} pb-1">Statistiques</a>
+      </div>
 
-    <div class="flex items-center gap-3 text-xs text-slate-500">
-    <span class="hidden sm:inline">Thème :</span>
-    <div class="theme-toggle" id="theme-toggle">
-        <button type="button" class="theme-pill" data-mode="auto">Auto</button>
-        <button type="button" class="theme-pill" data-mode="light">Clair</button>
-        <button type="button" class="theme-pill" data-mode="dark">Sombre</button>
-    </div>
-    <span class="opacity-60 hidden sm:inline">v0.2</span>
-</div>
+      <div class="flex items-center gap-3 text-xs text-slate-500">
+        <span class="hidden sm:inline">Thème :</span>
+        <div class="theme-toggle" id="theme-toggle">
+          <button type="button" class="theme-pill" data-mode="auto">Auto</button>
+          <button type="button" class="theme-pill" data-mode="light">Clair</button>
+          <button type="button" class="theme-pill" data-mode="dark">Sombre</button>
+        </div>
+        <span class="opacity-60 hidden sm:inline">v0.2</span>
+      </div>
 
-</nav>
+  </nav>
 
-<main class="container pb-12">
-  {% block content %}{% endblock %}
-</main>
+  <main class="container pb-12">
+    {% block content %}{% endblock %}
+  </main>
 
-<script>
-  (function () {
-    const root = document.documentElement;
-    const toggle = document.getElementById('theme-toggle');
-    if (!toggle) return;
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const toggle = document.getElementById('theme-toggle');
+      if (!toggle) return;
 
-    const buttons = Array.from(toggle.querySelectorAll('[data-mode]'));
-    const THEME_KEY = 'app_theme_mode';
+      const buttons = Array.from(toggle.querySelectorAll('[data-mode]'));
+      const THEME_KEY = 'app_theme_mode';
 
-    function applyTheme(mode) {
-      if (mode === 'light') {
-        root.setAttribute('data-theme', 'light');
-      } else if (mode === 'dark') {
-        root.setAttribute('data-theme', 'dark');
-      } else {
-        // auto → on laisse l’OS décider (prefers-color-scheme)
-        root.removeAttribute('data-theme');
+      function applyTheme(mode) {
+        if (mode === 'light') {
+          root.setAttribute('data-theme', 'light');
+        } else if (mode === 'dark') {
+          root.setAttribute('data-theme', 'dark');
+        } else {
+          // auto → on laisse l’OS décider (prefers-color-scheme)
+          root.removeAttribute('data-theme');
+        }
       }
-    }
 
-    function setActive(mode) {
+      function setActive(mode) {
+        buttons.forEach(btn => {
+          btn.classList.toggle('is-active', btn.dataset.mode === mode);
+        });
+      }
+
+      // 1) Lire préférence sauvegardée, sinon auto
+      let saved = localStorage.getItem(THEME_KEY);
+      if (!saved || !['auto', 'light', 'dark'].includes(saved)) {
+        saved = 'auto';
+      }
+      applyTheme(saved);
+      setActive(saved);
+
+      // 2) Clic sur un des boutons
       buttons.forEach(btn => {
-        btn.classList.toggle('is-active', btn.dataset.mode === mode);
+        btn.addEventListener('click', () => {
+          const mode = btn.dataset.mode;
+          localStorage.setItem(THEME_KEY, mode);
+          applyTheme(mode);
+          setActive(mode);
+        });
       });
-    }
-
-    // 1) Lire préférence sauvegardée, sinon auto
-    let saved = localStorage.getItem(THEME_KEY);
-    if (!saved || !['auto', 'light', 'dark'].includes(saved)) {
-      saved = 'auto';
-    }
-    applyTheme(saved);
-    setActive(saved);
-
-    // 2) Clic sur un des boutons
-    buttons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const mode = btn.dataset.mode;
-        localStorage.setItem(THEME_KEY, mode);
-        applyTheme(mode);
-        setActive(mode);
-      });
-    });
-  })();
-</script>
+    })();
+  </script>
 </body>
+
 </html>
 
 </body>
+
 </html>
 
 </body>
+
 </html>

@@ -1,20 +1,61 @@
-# Environnement virtuel
+
+# Virtual environments (local)
+/.venv/
 app/.venv/
 venv/
-.venv/
 
-# Base de données locale
-app/data/*.db
-
-# Python cache
+# Python bytecode and caches
 __pycache__/
+*.py[cod]
 *.pyc
+*.pyo
+*.pyd
 
-# VS Code config
+# Pytest / coverage
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Mypy / type checkers
+.mypy_cache/
+
+# Distribution / build
+build/
+dist/
+*.egg-info/
+
+# IDEs and editors
 .vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
 
-# Autres fichiers temporaires
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment variables / secrets
+.env
+.env.*
+credentials.json
+
+# Local sqlite DB and backups
+app/data/*.db
+app/data/*.db.bak
 *.sqlite3
+
+# Logs and runtime files
+*.log
+logs/
+
+# Jupyter
+.ipynb_checkpoints
+
+# Cache
+.cache/
+
+# Optional: local readme or design artifacts (kept local)
 readme.txt
 schema_architecture_gestion_temps.png
 

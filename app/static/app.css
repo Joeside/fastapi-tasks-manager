@@ -1,6 +1,5 @@
 /* ======== THEME OLIVE + CREME ======== */
 
-/* Clair par défaut */
 :root {
   /* Couleurs principales */
   --bg: #F8F5EF;
@@ -47,32 +46,6 @@
   --app-width: 64rem;
 }
 
-/* DARK MODE — Olive profond */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1A1D17;
-    /* vert-noir profond */
-    --fg: #E6E7E4;
-    /* gris clair chaud */
-    --card-bg: #242820;
-    /* vert très foncé */
-    --muted: #9DA093;
-    --border: #373A33;
-
-    --accent: #A2B56D;
-    /* olive clair pour contraster */
-    --accent-hover: #C2D492;
-
-    --table-head-bg: #2D3029;
-    --table-head-fg: #D7D8D2;
-
-    --badge-todo-bg: #37422D;
-    --badge-todo-fg: #DDE7C5;
-    --badge-done-bg: #2A2D26;
-    --badge-done-fg: #B5B7AE;
-  }
-}
-
 /* ==== Layout global ==== */
 body {
   background: var(--bg);
@@ -81,6 +54,17 @@ body {
 
 nav.app-nav {
   background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Barre de navigation fixe */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  /* assez élevé pour rester par-dessus */
+  background: var(--bg);
+  /* s’adapte au thème clair/sombre */
   border-bottom: 1px solid var(--border);
 }
 
@@ -93,15 +77,6 @@ nav a.active {
   color: var(--accent) !important;
   border-color: var(--accent) !important;
   border-bottom: 2px solid var(--accent);
-}
-
-/* ==== Composants ==== */
-.card {
-  background: var(--card-bg);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  padding: 1rem;
 }
 
 /* Boutons olive */
@@ -195,6 +170,8 @@ nav a.active {
 /* Ligne de section (groupes d'échéances) */
 .section-row td {
   background: rgba(0, 0, 0, 0.02);
+  padding-top: 0.7rem;
+  padding-bottom: 0.4rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -203,99 +180,7 @@ nav a.active {
   }
 }
 
-/* Chips */
-.chip {
-  background: var(--badge-done-bg);
-  color: var(--badge-done-fg);
-  border-color: var(--border);
-}
-
-.chip:hover {
-  background: var(--accent);
-  color: #fff;
-}
-
-/* Tableaux */
-.table {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-}
-
-.table thead th {
-  background: var(--table-head-bg);
-  color: var(--table-head-fg);
-}
-
-/* Largeurs & alignement pour la liste des tâches */
-.table thead th:nth-child(1),
-.table tbody td:nth-child(1) {
-  width: 35%;
-}
-
-/* Priorité, Quadrant, Statut, Action : colonnes étroites et centrées */
-.table thead th:nth-child(2),
-.table thead th:nth-child(3),
-.table thead th:nth-child(4),
-.table thead th:nth-child(5),
-.table thead th:nth-child(6),
-.table tbody td:nth-child(2),
-.table tbody td:nth-child(3),
-.table tbody td:nth-child(4),
-.table tbody td:nth-child(5),
-.table tbody td:nth-child(6) {
-  width: 14%;
-  text-align: center;
-  white-space: nowrap;
-}
-
-/* Colonne Échéance : un peu plus large mais compacte */
-.table thead th:nth-child(5),
-.table tbody td:nth-child(5) {
-  width: 15%;
-  white-space: nowrap;
-}
-
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0b1220;
-    /* bleu nuit très foncé */
-    --fg: #e2e8f0;
-    /* slate-200 */
-    --card-bg: #0f172a;
-    /* slate-900 */
-    --muted: #94a3b8;
-    /* slate-400 */
-    --border: #1f2937;
-    /* slate-800 */
-    --accent: #34d399;
-    /* emerald-400 pour plus de contraste */
-    --accent-hover: #10b981;
-    /* emerald-500 */
-
-    --nav-bg: #0b1220;
-    --table-head-bg: #111827;
-    /* slate-900 */
-    --table-head-fg: #cbd5e1;
-    /* slate-300 */
-
-    --badge-todo-bg: #064e3b;
-    /* emerald-900 */
-    --badge-todo-fg: #a7f3d0;
-    /* emerald-200 */
-    --badge-done-bg: #1f2937;
-    /* slate-800 */
-    --badge-done-fg: #cbd5e1;
-    /* slate-300 */
-  }
-}
-
 /* ==== CHIPS (Filtres actifs) ==== */
-.chip {
-  margin-top: 0.25rem;
-  margin-bottom: 0.25rem;
-}
-
 .chip {
   display: inline-flex;
   align-items: center;
@@ -312,6 +197,8 @@ nav a.active {
   text-decoration: none;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   transition: all 0.15s ease-in-out;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
 }
 
 .chip:hover {
@@ -472,15 +359,6 @@ main.container {
   padding-right: 1rem;
 }
 
-/* ==== Composants réutilisables ==== */
-.card {
-  background: var(--card-bg);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 1rem;
-  border: 1px solid var(--border);
-}
-
 .btn {
   display: inline-block;
   font-size: 0.8rem;
@@ -495,25 +373,6 @@ main.container {
   border: 1px solid transparent;
 }
 
-.btn-primary {
-  background: var(--accent);
-  color: #fff;
-}
-
-.btn-primary:hover {
-  background: var(--accent-hover);
-}
-
-.btn-secondary {
-  background: var(--badge-done-bg);
-  color: var(--badge-done-fg);
-  border-color: var(--border);
-}
-
-.btn-secondary:hover {
-  filter: brightness(1.05);
-}
-
 .btn-sm {
   padding: 0.2rem 0.45rem;
   font-size: 0.8rem;
@@ -523,6 +382,37 @@ main.container {
   width: 100%;
 }
 
+/* ==== Composants réutilisables ==== */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1rem;
+  border: 1px solid var(--border);
+}
+
+.card ul li {
+  min-height: 3.3rem;
+  /* ajuster selon ton rendu */
+}
+
+/* Variante de carte pour les tableaux : pas de padding externe */
+.card-table {
+  padding: 0;
+}
+
+.card-table .table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* On remet un peu de marge en haut/bas du contenu */
+.card-table .table thead th,
+.card-table .table tbody td {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
 
 .badge {
   display: inline-block;
@@ -536,31 +426,23 @@ main.container {
   line-height: 1.2;
 }
 
-.badge-todo {
-  background: var(--badge-todo-bg);
-  color: var(--badge-todo-fg);
-}
-
-.badge-done {
-  background: var(--badge-done-bg);
-  color: var(--badge-done-fg);
-}
-
 /* Tableaux */
 .table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   table-layout: fixed;
   background: var(--card-bg);
   border-radius: var(--radius);
   overflow: hidden;
-  border: 1px solid var(--border);
+  overflow-x: auto;
+  border: 0px solid var(--border);
 }
 
 .table thead th {
   background: var(--table-head-bg);
   color: var(--table-head-fg);
-  padding: 0.5rem 0.75rem;
+  padding: 0.6rem 0.75rem;
   text-align: left;
   font-weight: 600;
 }
@@ -569,6 +451,25 @@ main.container {
   padding: 0.5rem 0.75rem;
   border-top: 1px solid var(--border);
   vertical-align: top;
+}
+
+/* Largeurs & alignement pour la liste des tâches */
+.table thead th:nth-child(1),
+.table tbody td:nth-child(1) {
+  width: 25%;
+  /* La première colonne (Tâche) prendra toute la place restante. */
+}
+
+/* Colonnes centrées et compactes */
+.table thead th:nth-child(3),
+.table thead th:nth-child(4),
+.table thead th:nth-child(6),
+.table tbody td:nth-child(3),
+.table tbody td:nth-child(4),
+.table tbody td:nth-child(6) {
+  /* On donne une largeur fixe à ces colonnes pour un meilleur alignement */
+  width: 15%;
+  text-align: center;
 }
 
 /* Nav */
@@ -596,29 +497,18 @@ main.container {
 
 /* ===== Overrides manuels par data-theme ===== */
 
-/* Forcer clair */
-:root[data-theme="light"] {
-  --bg: #F8F5EF;
-  --fg: #2F332B;
-  --card-bg: #FFFFFF;
-  --muted: #8A8F86;
-  --border: #DDD8CE;
-
-  --accent: #6B7B3C;
-  --accent-hover: #55622E;
-  --accent-light: #DDE3CE;
-
-  --table-head-bg: #EEE9DF;
-  --table-head-fg: #4F514A;
-
-  --badge-todo-bg: #E7F0D8;
-  --badge-todo-fg: #465A2B;
-  --badge-done-bg: #EFEDE6;
-  --badge-done-fg: #6B6E66;
+/* Thème sombre (via data-theme ou préférence OS) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --is-dark: 1;
+  }
 }
 
-/* Forcer sombre */
 :root[data-theme="dark"] {
+  --is-dark: 1;
+}
+
+:root:where([data-theme="dark"], [data-theme="auto"]:not([data-theme="light"])) {
   --bg: #1A1D17;
   --fg: #E6E7E4;
   --card-bg: #242820;
@@ -637,7 +527,6 @@ main.container {
   --badge-done-bg: #2A2D26;
   --badge-done-fg: #B5B7AE;
 }
-
 
 /* ====== Boutons segmentés de thème ====== */
 
@@ -675,6 +564,9 @@ main.container {
 
 /* Icônes Priorité — Urgent / Important */
 .prio-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1rem;
   line-height: 1;
   margin: 0 2px;
@@ -703,7 +595,12 @@ main.container {
 .table thead th:nth-child(2),
 .table tbody td:nth-child(2) {
   text-align: center;
-  width: 8%;
+  width: 12%;
+}
+
+.table thead th:nth-child(5),
+.table tbody td:nth-child(5) {
+  width: 14%;
   white-space: nowrap;
 }
 
@@ -722,8 +619,69 @@ main.container {
   min-width: 0;
 }
 
-/* Le badge (Auj., Retard, etc.) reste compact */
-.title-row .badge {
-  white-space: nowrap;
-  margin-left: 1rem;
+/* Largeur uniforme pour les badges d'échéance */
+.badge-due-overdue,
+.badge-due-today,
+.badge-due-soon {
+  min-width: 3.4rem;
+  /* Ajuste selon rendu */
+  text-align: center;
+  display: inline-flex;
+  justify-content: center;
+}
+
+/* ====== Page d'édition de tâches ====== */
+
+/* Carte d'édition : un peu plus étroite et centrée */
+.edit-card {
+  max-width: 640px;
+  margin-top: 2rem;
+}
+
+/* Lignes du formulaire d'édition */
+.edit-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Label à gauche, champ à droite (sur écran moyen +) */
+.edit-row-label {
+  font-weight: 500;
+}
+
+.edit-row-field {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .edit-row {
+    flex-direction: row;
+    align-items: center;
+    gap: 1.25rem;
+    /* avant : 0.25rem → trop petit */
+  }
+
+  .edit-row-label {
+    width: 120px;
+    /* largeur de la colonne des labels */
+    flex-shrink: 0;
+  }
+
+  .edit-row-field {
+    flex: 1;
+  }
+
+  .edit-row textarea {
+    min-height: 100px;
+  }
+
+}
+
+/* Zone boutons en bas de la carte */
+.edit-actions {
+  margin-top: 0.75rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }

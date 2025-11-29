@@ -1,0 +1,2 @@
+extend-ignore = ["E203"]
+line-length = 88

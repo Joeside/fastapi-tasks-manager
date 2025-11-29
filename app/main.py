@@ -8,7 +8,6 @@ from typing import Optional
 from urllib.parse import urlencode
 
 from .database import Base, engine, get_db
-from .models import Task
 from . import crud
 from .routers import tasks as tasks_router
 
@@ -31,7 +30,7 @@ def compute_quadrant(t) -> int:
         return 4
 
 
-def compute_due_status(due_date_str: Optional[str]) -> str:
+def compute_due_status(due_date: Optional[date]) -> str:
     """
     Retourne l'un de :
     - "none"      : pas d'échéance
@@ -40,10 +39,12 @@ def compute_due_status(due_date_str: Optional[str]) -> str:
     - "soon"      : dans les 7 prochains jours
     - "later"     : plus tard
     """
-    if not due_date_str:
+    if not due_date:
         return "none"
+
+    # due_date is a datetime.date object (or convertible to one)
     try:
-        d = datetime.strptime(due_date_str, "%Y-%m-%d").date()
+        d = due_date
     except Exception:
         return "none"
 
@@ -81,65 +82,27 @@ def page_list(
     q: Optional[str] = None,  # recherche texte
     sort: Optional[str] = None,  # "created_desc" | "due_asc" | "due_desc"
 ):
-    tasks = crud.get_tasks(db)
-    total_count = len(tasks)
-
-    # --- Filtres ---
     def yesno(val: Optional[str]):
         if val is None or val == "" or val == "all":
             return None
         return True if val == "yes" else False
 
+    # --- Filtres et Tri ---
     status_val = status_f if status_f in {"todo", "done"} else None
     urgent_val = yesno(urgent_f)
     important_val = yesno(important_f)
-
-    if status_val:
-        tasks = [t for t in tasks if t.status == status_val]
-    if urgent_val is not None:
-        tasks = [t for t in tasks if bool(t.urgent) == urgent_val]
-    if important_val is not None:
-        tasks = [t for t in tasks if bool(t.important) == important_val]
-    if q and q.strip():
-        needle = q.strip().lower()
-        tasks = [
-            t
-            for t in tasks
-            if needle in (t.title or "").lower()
-            or needle in (t.description or "").lower()
-        ]
-
-    # --- Tri (par défaut : création décroissante) ---
+    search_query = q.strip() if q else None
     sort_key = sort or "created_desc"
 
-    def parse_due(date_str: Optional[str]):
-        if not date_str:
-            return None
-        try:
-            return datetime.strptime(date_str, "%Y-%m-%d").date()
-        except Exception:
-            return None
-
-    if sort_key == "due_asc":
-        tasks = sorted(
-            tasks,
-            key=lambda t: (
-                parse_due(t.due_date) is None,
-                parse_due(t.due_date),
-                t.id,
-            ),
-        )
-    elif sort_key == "due_desc":
-        tasks = sorted(
-            tasks,
-            key=lambda t: (
-                parse_due(t.due_date) is None,
-                parse_due(t.due_date) or date.min,
-            ),
-            reverse=True,
-        )
-    else:  # "created_desc"
-        tasks = sorted(tasks, key=lambda t: t.created_at, reverse=True)
+    tasks = crud.get_tasks(
+        db,
+        status=status_val,
+        urgent=urgent_val,
+        important=important_val,
+        q=search_query,
+        sort=sort_key,
+    )
+    total_count = crud.get_tasks_count(db)
 
     # --- Quadrant + statut d'échéance + regroupement ---
     overdue = []
@@ -255,7 +218,8 @@ def page_list(
 
 @app.get("/matrix", response_class=HTMLResponse)
 def page_matrix(request: Request, db: Session = Depends(get_db)):
-    tasks = crud.get_tasks(db)
+    # On ne montre que les tâches à faire dans la matrice
+    tasks = crud.get_tasks(db, status="todo")
 
     q1 = []
     q2 = []
@@ -263,9 +227,6 @@ def page_matrix(request: Request, db: Session = Depends(get_db)):
     q4 = []
 
     for t in tasks:
-        if t.status == "done":
-            # On ne montre pas les tâches terminées dans la matrice
-            continue
         t.quadrant = compute_quadrant(t)
         t.due_status = compute_due_status(t.due_date)
 
@@ -293,44 +254,20 @@ def page_matrix(request: Request, db: Session = Depends(get_db)):
 # Page de statistiques
 @app.get("/stats", response_class=HTMLResponse)
 def page_stats(request: Request, db: Session = Depends(get_db)):
-    all_tasks = crud.get_tasks(db)
-    total = len(all_tasks)
-    done = sum(1 for t in all_tasks if t.status == "done")
+    stats = crud.get_general_stats(db)
+    total = stats["total"]
+    done = stats["done"]
     todo = total - done
     completion_rate = round((done / total) * 100) if total else 0
-
-    # Répartition Eisenhower (toutes tâches)
-    q_urgent_important_all = sum(1 for t in all_tasks if t.urgent and t.important)
-    q_important_not_urgent_all = sum(
-        1 for t in all_tasks if (not t.urgent) and t.important
-    )
-    q_urgent_not_important_all = sum(
-        1 for t in all_tasks if t.urgent and (not t.important)
-    )
-    q_neither_all = sum(1 for t in all_tasks if (not t.urgent) and (not t.important))
-
-    # Répartition Eisenhower (seulement à faire)
-    todos = [t for t in all_tasks if t.status != "done"]
-    q_urgent_important_todo = sum(1 for t in todos if t.urgent and t.important)
-    q_important_not_urgent_todo = sum(
-        1 for t in todos if (not t.urgent) and t.important
-    )
-    q_urgent_not_important_todo = sum(
-        1 for t in todos if t.urgent and (not t.important)
-    )
-    q_neither_todo = sum(1 for t in todos if (not t.urgent) and (not t.important))
 
     # Terminé récemment (7 derniers jours)
     now_utc = datetime.now(timezone.utc)
     seven_days_ago = now_utc - timedelta(days=7)
-    done_last_7 = 0
-    for t in all_tasks:
-        if t.status == "done" and t.completed_at:
-            comp = t.completed_at
-            if comp.tzinfo is None:
-                comp = comp.replace(tzinfo=timezone.utc)
-            if comp >= seven_days_ago:
-                done_last_7 += 1
+    done_last_7 = crud.get_completed_since_count(db, since=seven_days_ago)
+
+    # Répartition Eisenhower
+    eisenhower_all = crud.get_eisenhower_stats(db)
+    eisenhower_todo = crud.get_eisenhower_stats(db, status="todo")
 
     return templates.TemplateResponse(
         "stats.html",
@@ -341,16 +278,16 @@ def page_stats(request: Request, db: Session = Depends(get_db)):
             "todo": todo,
             "completion_rate": completion_rate,
             "q_all": {
-                "ii": q_urgent_important_all,
-                "inu": q_important_not_urgent_all,
-                "uni": q_urgent_not_important_all,
-                "nn": q_neither_all,
+                "ii": eisenhower_all.get("q1", 0),
+                "inu": eisenhower_all.get("q2", 0),
+                "uni": eisenhower_all.get("q3", 0),
+                "nn": eisenhower_all.get("q4", 0),
             },
             "q_todo": {
-                "ii": q_urgent_important_todo,
-                "inu": q_important_not_urgent_todo,
-                "uni": q_urgent_not_important_todo,
-                "nn": q_neither_todo,
+                "ii": eisenhower_todo.get("q1", 0),
+                "inu": eisenhower_todo.get("q2", 0),
+                "uni": eisenhower_todo.get("q3", 0),
+                "nn": eisenhower_todo.get("q4", 0),
             },
             "done_last_7": done_last_7,
         },
@@ -397,7 +334,7 @@ def complete_task_from_list(
     from . import schemas
 
     task_in = schemas.TaskUpdate(status="done")
-    updated = crud.update_task(db, task_id, task_in)
+    crud.update_task(db, task_id, task_in)
 
     return RedirectResponse(url="/list", status_code=status.HTTP_303_SEE_OTHER)
 
@@ -411,7 +348,7 @@ def reopen_task_from_list(
     from . import schemas
 
     task_in = schemas.TaskUpdate(status="todo")
-    updated = crud.update_task(db, task_id, task_in)
+    crud.update_task(db, task_id, task_in)
 
     return RedirectResponse(url="/list", status_code=status.HTTP_303_SEE_OTHER)
 
@@ -423,8 +360,8 @@ def edit_task_page(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    # On va chercher la tâche directement
-    task = db.query(Task).filter(Task.id == task_id).first()
+    # Récupérer la tâche via la couche CRUD
+    task = crud.get_task(db, task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Tâche introuvable")
 
