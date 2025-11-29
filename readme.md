@@ -1,8 +1,8 @@
-🧭 FastAPI Tasks Manager
+FastAPI Tasks Manager
 
 Un gestionnaire de tâches minimaliste, rapide, et organisé, basé sur FastAPI + SQLAlchemy + Jinja2
 
-📌 Description du projet
+Description du projet
 
 Ce projet est une application web complète permettant de :
 
@@ -22,20 +22,20 @@ Utiliser une API REST complète (CRUD) sous /api/tasks
 
 L’application est construite avec :
 
-⚡ FastAPI (backend ultra rapide)
+FastAPI (backend ultra rapide)
 
-🗄️ SQLAlchemy (ORM et SQLite)
+SQLAlchemy (ORM et SQLite)
 
-🧩 Jinja2 (templates HTML)
+Jinja2 (templates HTML)
 
-🎨 CSS personnalisé
+CSS personnalisé
 
-🗂️ Architecture propre (models, schemas, CRUD, routers)
+Architecture propre (models, schemas, CRUD, routers)
 
 Ce projet fait partie du parcours d’apprentissage de Jonathan, et sert aussi de base à un futur portfolio professionnel.
 
-🚀 Fonctionnalités principales
-✔️ Gestion des tâches
+Fonctionnalités principales
+Gestion des tâches
 
 Création de tâches
 
@@ -47,7 +47,7 @@ Description
 
 Statut : todo ou done
 
-✔️ Affichage structuré
+Affichage structuré
 
 Page Liste (/list) avec filtres avancés
 
@@ -61,7 +61,7 @@ distribution Eisenhower
 
 tâches terminées récemment
 
-✔️ API REST complète
+API REST complète
 
 Disponible sous /api/tasks :
 
@@ -71,7 +71,8 @@ POST	/api/tasks/	crée une nouvelle tâche
 GET	/api/tasks/{id}	obtient une tâche
 PUT	/api/tasks/{id}	met à jour une tâche
 DELETE	/api/tasks/{id}	supprime une tâche
-📂 Structure du projet
+
+Structure du projet
 project-root/
 │
 ├── app/
@@ -94,42 +95,42 @@ project-root/
 ├── README.md
 └── .gitignore
 
-🛠️ Installation et exécution locale
-1️⃣ Cloner le projet
+Installation et exécution locale
+1️- Cloner le projet
 git clone https://github.com/Joeside/fastapi-tasks-manager.git
 cd fastapi-tasks-manager
 
-2️⃣ Créer un environnement virtuel
+2️- Créer un environnement virtuel
 python -m venv .venv
 .\.venv\Scripts\activate
 
-3️⃣ Installer les dépendances
+3️- Installer les dépendances
 pip install -r requirements.txt
 
-4️⃣ Lancer le serveur
+4️- Lancer le serveur
 uvicorn app.main:app --reload
 
-5️⃣ Ouvrir dans le navigateur
+5️- Ouvrir dans le navigateur
 
 Application : http://127.0.0.1:8000/list
 
 API Swagger : http://127.0.0.1:8000/docs
 
-🎯 Prochaines fonctionnalités prévues
+Prochaines fonctionnalités prévues
 
-✏️ Page modifier une tâche
+Page modifier une tâche
 
-🗑️ Suppression depuis l’interface
+Suppression depuis l’interface
 
-💾 Exportation CSV / JSON
+Exportation CSV / JSON
 
-👤 Comptes utilisateurs
+Comptes utilisateurs
 
-☁️ Déploiement cloud (Render ou Railway)
+Déploiement cloud (Render ou Railway)
 
-📬 Contact
+Contact
 
 Projet réalisé par Jonathan
-📧 Contact professionnel : à compléter
+Contact professionnel : à compléter
 
-⭐ Si tu trouves ce projet utile, laisse une étoile sur GitHub !
+Si tu trouves ce projet utile, laisse une étoile sur GitHub !
