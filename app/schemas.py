@@ -14,6 +14,9 @@ class TaskBase(BaseModel):
     tag: Optional[str] = None
     position: Optional[int] = None
     quadrant: Optional[int] = None
+    # v0.5: recurrence fields
+    recurrence_pattern: Optional[str] = None  # "daily", "weekly", "monthly"
+    recurrence_end_date: Optional[date] = None
 
 
 class TaskCreate(TaskBase):
@@ -31,6 +34,8 @@ class TaskUpdate(BaseModel):
     tag: Optional[str] = None
     position: Optional[int] = None
     quadrant: Optional[int] = None
+    recurrence_pattern: Optional[str] = None
+    recurrence_end_date: Optional[date] = None
 
 
 class TaskOut(TaskBase):
@@ -58,3 +63,38 @@ class TaskReorderItem(BaseModel):
 
 class TaskBulkReorder(BaseModel):
     items: list[TaskReorderItem]
+
+
+# v0.5: Subtask schemas
+class SubtaskBase(BaseModel):
+    title: str
+    status: str = "todo"
+    position: Optional[int] = None
+
+
+class SubtaskCreate(SubtaskBase):
+    pass
+
+
+class SubtaskUpdate(BaseModel):
+    title: Optional[str] = None
+    status: Optional[str] = None
+    position: Optional[int] = None
+
+
+class SubtaskOut(SubtaskBase):
+    id: int
+    task_id: int
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# Subtask bulk reorder
+class SubtaskReorderItem(BaseModel):
+    id: int
+    position: Optional[int]
+
+
+class SubtaskBulkReorder(BaseModel):
+    items: list[SubtaskReorderItem]

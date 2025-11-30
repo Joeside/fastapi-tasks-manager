@@ -45,6 +45,21 @@
       </div>
     </div>
 
+    <div class="flex flex-col">
+      <label class="font-medium mb-1">Récurrence</label>
+      <select name="recurrence_pattern">
+        <option value="">Aucune</option>
+        <option value="daily">Quotidienne</option>
+        <option value="weekly">Hebdomadaire</option>
+        <option value="monthly">Mensuelle</option>
+      </select>
+    </div>
+
+    <div class="flex flex-col">
+      <label class="font-medium mb-1">Jusqu'au</label>
+      <input type="date" name="recurrence_end_date" />
+    </div>
+
 
     <div class="md:col-span-2 flex gap-3 items-center">
       <button class="btn btn-primary" type="submit">
