@@ -41,3 +41,20 @@ class TaskOut(TaskBase):
     quadrant: Optional[int] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class TaskPositionUpdate(BaseModel):
+    position: Optional[int]
+
+
+class TaskQuadrantUpdate(BaseModel):
+    quadrant: Optional[int]
+
+
+class TaskReorderItem(BaseModel):
+    id: int
+    position: Optional[int]
+
+
+class TaskBulkReorder(BaseModel):
+    items: list[TaskReorderItem]

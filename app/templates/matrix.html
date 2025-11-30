@@ -12,7 +12,8 @@
 		{% else %}
 		<ul class="space-y-2 text-sm">
 			{% for t in q1 %}
-			<li class="border-b border-slate-200/40 pb-2 last:border-b-0">
+			<li data-task-id="{{ t.id }}" class="border-b border-slate-200/40 pb-2 last:border-b-0">
+				<span class="drag-handle" title="Déplacer">☰</span>
 				<!-- Ligne titre + icônes de priorité + badge d'échéance aligné à droite -->
 				<div class="title-row">
 					<!-- Gauche : titre + 🔥⭐ -->
@@ -73,7 +74,8 @@
 		{% else %}
 		<ul class="space-y-2 text-sm">
 			{% for t in q2 %}
-			<li class="border-b border-slate-200/40 pb-2 last:border-b-0">
+			<li data-task-id="{{ t.id }}" class="border-b border-slate-200/40 pb-2 last:border-b-0">
+				<span class="drag-handle" title="Déplacer">☰</span>
 				<!-- Ligne titre + icônes de priorité + badge d'échéance aligné à droite -->
 				<div class="title-row">
 					<!-- Gauche : titre + 🔥⭐ -->
@@ -130,7 +132,8 @@
 		{% else %}
 		<ul class="space-y-2 text-sm">
 			{% for t in q3 %}
-			<li class="border-b border-slate-200/40 pb-2 last:border-b-0">
+			<li data-task-id="{{ t.id }}" class="border-b border-slate-200/40 pb-2 last:border-b-0">
+				<span class="drag-handle" title="Déplacer">☰</span>
 				<!-- Ligne titre + icônes de priorité + badge d'échéance aligné à droite -->
 				<div class="title-row">
 					<!-- Gauche : titre + 🔥⭐ -->
@@ -187,7 +190,8 @@
 		{% else %}
 		<ul class="space-y-2 text-sm">
 			{% for t in q4 %}
-			<li class="border-b border-slate-200/40 pb-2 last:border-b-0">
+			<li data-task-id="{{ t.id }}" class="border-b border-slate-200/40 pb-2 last:border-b-0">
+				<span class="drag-handle" title="Déplacer">☰</span>
 				<!-- Ligne titre + icônes de priorité + badge d'échéance aligné à droite -->
 				<div class="title-row">
 					<!-- Gauche : titre + 🔥⭐ -->
@@ -238,4 +242,104 @@
 	</div>
 
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<style>
+	/* indicate draggable items in the matrix */
+	.card ul li {
+		cursor: grab;
+		-webkit-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
+
+	.card ul li:active {
+		cursor: grabbing;
+	}
+
+	.drag-handle {
+		cursor: grab;
+		display: inline-block;
+		width: 20px;
+		text-align: center;
+		margin-right: 8px;
+		color: #888;
+		user-select: none;
+	}
+
+	.drag-handle:active {
+		cursor: grabbing;
+	}
+</style>
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		// Find all quadrant lists (the <ul> elements inside each card)
+		const lists = Array.from(document.querySelectorAll('.card ul'));
+		if (!lists.length || typeof Sortable === 'undefined') return;
+
+		// Helper to update positions of items inside a list (1-based)
+		async function updatePositionsInList(listEl) {
+			const items = Array.from(listEl.querySelectorAll('li'));
+			let pos = 1;
+			const promises = [];
+			for (const it of items) {
+				const id = it.dataset.taskId;
+				if (!id) continue;
+				promises.push(fetch(`/api/tasks/${id}/position`, {
+					method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ position: pos })
+				}));
+				pos++;
+			}
+			try { await Promise.all(promises); } catch (e) { console.error('Position update error', e); }
+		}
+
+		lists.forEach((ul, idx) => {
+			Sortable.create(ul, {
+				onStart: function () { document.body.style.userSelect = 'none'; },
+				handle: '.drag-handle',
+				group: 'matrix',
+				animation: 150,
+				onAdd: async function (evt) {
+					// When item is moved into this list, update quadrant then positions
+					const item = evt.item;
+					const id = item.dataset.taskId;
+					const target = evt.to;
+					// Quadrant number mapping based on column index (q1..q4)
+					// We rely on the ordering of lists in the template: q1,q2,q3,q4
+					const quadrantIndex = lists.indexOf(target);
+					const quadrantNumber = quadrantIndex + 1;
+
+					try {
+						await fetch(`/api/tasks/${id}/quadrant`, {
+							method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({ quadrant: quadrantNumber })
+						});
+					} catch (e) {
+						console.error('Failed to update quadrant', e);
+					}
+
+					// Recalculate positions within target list and source list using bulk endpoint
+					const targetItems = Array.from(target.querySelectorAll('li')).map((it, i) => ({ id: Number(it.dataset.taskId), position: i + 1 }));
+					const fromItems = evt.from ? Array.from(evt.from.querySelectorAll('li')).map((it, i) => ({ id: Number(it.dataset.taskId), position: i + 1 })) : [];
+
+					try {
+						if (targetItems.length) await fetch('/api/tasks/reorder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: targetItems }) });
+						if (fromItems.length) await fetch('/api/tasks/reorder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: fromItems }) });
+					} catch (e) {
+						console.error('Failed to bulk update positions after move', e);
+					}
+				},
+				onUpdate: async function (evt) {
+					// Reordering within same quadrant: update positions
+					const listEl = evt.from;
+					await updatePositionsInList(listEl);
+				}
+				, onEnd: function () { document.body.style.userSelect = ''; }
+			});
+		});
+	});
+</script>
 {% endblock %}

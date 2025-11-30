@@ -184,6 +184,110 @@ def update_task(
     return task
 
 
+def set_task_position(
+    db: Session, task_id: int, position: Optional[int]
+) -> Optional[models.Task]:
+    """Set the `position` of a single task. Returns the updated task or None if not found."""
+    task = get_task(db, task_id)
+    if not task:
+        return None
+
+    # Allow nullable positions
+    task.position = int(position) if position is not None else None
+    task.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(task)
+    return task
+
+
+def set_task_quadrant(
+    db: Session, task_id: int, quadrant: Optional[int]
+) -> Optional[models.Task]:
+    """Set the `quadrant` of a task and update urgent/important flags accordingly.
+
+    Quadrant mapping (Eisenhower):
+      1 -> urgent=True, important=True
+      2 -> urgent=False, important=True
+      3 -> urgent=True, important=False
+      4 -> urgent=False, important=False
+
+    Accepts None to clear quadrant (does not change flags in that case).
+    """
+    task = get_task(db, task_id)
+    if not task:
+        return None
+
+    if quadrant is None:
+        task.quadrant = None
+    else:
+        try:
+            q = int(quadrant)
+        except Exception:
+            return None
+        task.quadrant = q
+        # Update flags based on quadrant
+        if q == 1:
+            task.urgent = True
+            task.important = True
+        elif q == 2:
+            task.urgent = False
+            task.important = True
+        elif q == 3:
+            task.urgent = True
+            task.important = False
+        else:
+            task.urgent = False
+            task.important = False
+
+    task.updated_at = datetime.now(timezone.utc)
+    # If marking done state not changed here
+    db.commit()
+    db.refresh(task)
+    return task
+
+
+def set_positions_bulk(db: Session, items: list) -> list:
+    """Set positions for multiple tasks in a single transaction.
+
+    `items` is an iterable of objects with attributes `id` and `position`.
+    Returns the list of updated Task objects.
+    """
+    if not items:
+        return []
+
+    ids = [
+        int(getattr(it, "id", it["id"])) if isinstance(it, dict) else int(it.id)
+        for it in items
+    ]
+    # Fetch existing tasks
+    tasks = db.query(models.Task).filter(models.Task.id.in_(ids)).all()
+    task_map = {t.id: t for t in tasks}
+
+    updated = []
+    now = datetime.now(timezone.utc)
+    for it in items:
+        if isinstance(it, dict):
+            tid = int(it.get("id"))
+            pos = it.get("position")
+        else:
+            tid = int(it.id)
+            pos = it.position
+
+        task = task_map.get(tid)
+        if not task:
+            continue
+        task.position = int(pos) if pos is not None else None
+        task.updated_at = now
+        updated.append(task)
+
+    db.commit()
+    # refresh updated tasks
+    for t in updated:
+        db.refresh(t)
+
+    return updated
+
+
 def delete_task(db: Session, task_id: int) -> Optional[bool]:
     """Delete a task by id. Returns True if deleted, None if not found."""
     task = get_task(db, task_id)

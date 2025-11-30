@@ -52,3 +52,42 @@ def delete_one_task(task_id: int, db: Session = Depends(get_db)):
     if not ok:
         raise HTTPException(status_code=404, detail="Task not found")
     return {"ok": True}
+
+
+@router.patch("/{task_id}/position", response_model=schemas.TaskOut)
+def update_task_position(
+    task_id: int, pos_in: schemas.TaskPositionUpdate, db: Session = Depends(get_db)
+):
+    """Update only the `position` field of a task.
+
+    Body: { "position": <int|null> }
+    Returns the updated task or 404 if not found.
+    """
+    updated = crud.set_task_position(db, task_id, pos_in.position)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return updated
+
+
+@router.patch("/{task_id}/quadrant", response_model=schemas.TaskOut)
+def update_task_quadrant(
+    task_id: int, q_in: schemas.TaskQuadrantUpdate, db: Session = Depends(get_db)
+):
+    """Update the `quadrant` of a task and adjust urgent/important flags accordingly.
+
+    Body: { "quadrant": <1|2|3|4|null> }
+    Returns the updated task or 404 if not found.
+    """
+    updated = crud.set_task_quadrant(db, task_id, q_in.quadrant)
+    if not updated:
+        raise HTTPException(
+            status_code=404, detail="Task not found or invalid quadrant"
+        )
+    return updated
+
+
+@router.post("/reorder", response_model=List[schemas.TaskOut])
+def bulk_reorder(reorder: schemas.TaskBulkReorder, db: Session = Depends(get_db)):
+    """Bulk update positions for multiple tasks. Accepts a payload `{"items": [{"id": 1, "position": 1}, ...]}`."""
+    updated = crud.set_positions_bulk(db, reorder.items)
+    return updated
