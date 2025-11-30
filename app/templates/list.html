@@ -45,6 +45,22 @@
       </div>
     </div>
 
+    <div class="flex flex-col">
+      <label class="font-medium mb-1">Récurrence</label>
+      <select name="recurrence_pattern">
+        <option value="">Aucune</option>
+        <option value="daily">Quotidienne</option>
+        <option value="weekly">Hebdomadaire</option>
+        <option value="monthly">Mensuelle</option>
+        <option value="yearly">Annuelle</option>
+      </select>
+    </div>
+
+    <div class="flex flex-col">
+      <label class="font-medium mb-1">Jusqu'au</label>
+      <input type="date" name="recurrence_end_date" />
+    </div>
+
 
     <div class="md:col-span-2 flex gap-3 items-center">
       <button class="btn btn-primary" type="submit">
@@ -101,6 +117,7 @@
         </option>
         <option value="due_asc" {{ 'selected' if sort=='due_asc' else '' }}>Échéance (proche → loin)</option>
         <option value="due_desc" {{ 'selected' if sort=='due_desc' else '' }}>Échéance (loin → proche)</option>
+        <option value="position" {{ 'selected' if sort=='position' else '' }}>Position (ordre manuel)</option>
       </select>
     </div>
 
@@ -186,10 +203,12 @@
       </tr>
 
       {% for t in section.tasks %}
-      <tr class="{% if t.quadrant == 1 and t.due_status == 'overdue' %}row-critical{% endif %}">
+      <tr data-task-id="{{ t.id }}"
+        class="{% if t.quadrant == 1 and t.due_status == 'overdue' %}row-critical{% endif %}">
         <!-- Titre + badge d’échéance + etc. (ta version actuelle) -->
         <td>
           <div class="title-row">
+            <span class="drag-handle" title="Déplacer">☰</span>
             <span class="title-text">{{ t.title }}</span>
 
             {% if t.due_status == 'overdue' %}
@@ -257,9 +276,14 @@
         </td>
 
         <td class="space-y-1">
-          <a href="/list/edit/{{ t.id }}" class="btn btn-secondary btn-sm w-full">
-            Modifier
-          </a>
+          <div class="flex items-center gap-1">
+            <a href="/list/edit/{{ t.id }}" class="btn btn-secondary btn-sm flex-1">
+              Modifier
+            </a>
+            <button onclick="deleteTask({{ t.id }})" class="btn btn-secondary btn-sm px-2" title="Supprimer">
+              🗑️
+            </button>
+          </div>
 
           {% if t.status != "done" %}
           <form method="post" action="/list/complete/{{ t.id }}">
@@ -286,7 +310,7 @@
       </tr>
 
       {% for t in done_tasks %}
-      <tr>
+      <tr data-task-id="{{ t.id }}">
         <td>
           <div class="font-medium flex items-center gap-2">
             {{ t.title }}
@@ -338,10 +362,15 @@
           <span class="badge badge-done">Fait</span>
         </td>
 
-        <td>
-          <form method="post" action="/list/reopen/{{ t.id }}">
-            <button class="btn btn-secondary btn-sm w-full">Rétablir</button>
-          </form>
+        <td class="space-y-1">
+          <div class="flex items-center gap-1">
+            <form method="post" action="/list/reopen/{{ t.id }}" class="flex-1">
+              <button class="btn btn-secondary btn-sm w-full">Rétablir</button>
+            </form>
+            <button onclick="deleteTask({{ t.id }})" class="btn btn-secondary btn-sm px-2" title="Supprimer">
+              🗑️
+            </button>
+          </div>
         </td>
       </tr>
       {% endfor %}
@@ -352,4 +381,80 @@
 </div>
 
 
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<style>
+  /* show move cursor and hint that rows are draggable */
+  .card-table table tbody tr:not(.section-row) {
+    cursor: grab;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  .card-table table tbody tr:not(.section-row):active {
+    cursor: grabbing;
+  }
+</style>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const tbody = document.querySelector('.card-table table tbody');
+    if (!tbody || typeof Sortable === 'undefined') return;
+
+    Sortable.create(tbody, {
+      onStart: function () { document.body.style.userSelect = 'none'; },
+      draggable: 'tr:not(.section-row)',
+      handle: '.drag-handle',
+      animation: 150,
+      onEnd: async function () {
+        // re-enable text selection
+        document.body.style.userSelect = '';
+        // Collect visible task rows (exclude section headers) and send bulk reorder
+        const rows = Array.from(tbody.querySelectorAll('tr')).filter(r => !r.classList.contains('section-row'));
+        const items = [];
+        let pos = 1;
+        for (const row of rows) {
+          const id = row.dataset.taskId;
+          if (!id) continue;
+          items.push({ id: Number(id), position: pos });
+          pos++;
+        }
+
+        try {
+          await fetch('/api/tasks/reorder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items }),
+          });
+        } catch (err) {
+          console.error('Failed to bulk update positions', err);
+        }
+      },
+    });
+  });
+
+  async function deleteTask(taskId) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        // Recharger la page pour mettre à jour la liste
+        window.location.reload();
+      } else {
+        alert('Erreur lors de la suppression de la tâche');
+      }
+    } catch (err) {
+      console.error('Erreur:', err);
+      alert('Erreur lors de la suppression de la tâche');
+    }
+  }
+</script>
 {% endblock %}

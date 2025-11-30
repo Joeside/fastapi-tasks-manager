@@ -31,6 +31,29 @@
                 </div>
             </div>
 
+            <!-- Récurrence -->
+            <div class="edit-row">
+                <label class="form-label edit-row-label" for="recurrence_pattern">Récurrence</label>
+                <div class="edit-row-field flex gap-4 items-center">
+                    <select id="recurrence_pattern" name="recurrence_pattern">
+                        <option value="" {% if not task.recurrence_pattern %}selected{% endif %}>Aucune</option>
+                        <option value="daily" {% if task.recurrence_pattern=='daily' %}selected{% endif %}>Quotidienne
+                        </option>
+                        <option value="weekly" {% if task.recurrence_pattern=='weekly' %}selected{% endif %}>
+                            Hebdomadaire</option>
+                        <option value="monthly" {% if task.recurrence_pattern=='monthly' %}selected{% endif %}>Mensuelle
+                        </option>
+                        <option value="yearly" {% if task.recurrence_pattern=='yearly' %}selected{% endif %}>Annuelle
+                        </option>
+                    </select>
+                    <div>
+                        <label for="recurrence_end_date" class="mr-2">Jusqu'au</label>
+                        <input id="recurrence_end_date" type="date" name="recurrence_end_date"
+                            value="{{ task.recurrence_end_date or '' }}">
+                    </div>
+                </div>
+            </div>
+
             <!-- Tag -->
             <div class="edit-row">
                 <label class="form-label edit-row-label" for="tag">Tag</label>
@@ -65,5 +88,79 @@
             </div>
         </form>
     </div>
+
+    <!-- Sous-tâches -->
+    <div class="card mt-6" data-task-id="{{ task.id }}">
+        <h2 class="text-lg font-semibold mb-3">Sous-tâches</h2>
+        <form id="add-subtask-form" class="flex gap-2 mb-4">
+            <input id="new-subtask-title" type="text" placeholder="Ajouter une sous-tâche" class="flex-1" />
+            <button class="btn btn-primary" type="submit">Ajouter</button>
+        </form>
+
+        <ul id="subtasks-list" class="space-y-2">
+            {% for s in subtasks %}
+            <li class="flex items-center gap-3">
+                <input type="checkbox" data-subtask-id="{{ s.id }}" {% if s.status=='done' %}checked{% endif %} />
+                <span class="flex-1 {% if s.status=='done' %}line-through opacity-60{% endif %}">{{ s.title }}</span>
+                <button class="text-red-600 text-sm" data-delete-subtask="{{ s.id }}">Supprimer</button>
+            </li>
+            {% else %}
+            <li class="text-sm text-slate-500">Aucune sous-tâche.</li>
+            {% endfor %}
+        </ul>
+    </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    (function () {
+        var subtasksCard = document.querySelector('[data-task-id]');
+        var taskId = subtasksCard ? subtasksCard.getAttribute('data-task-id') : null;
+        var addForm = document.getElementById('add-subtask-form');
+        var addInput = document.getElementById('new-subtask-title');
+        var listEl = document.getElementById('subtasks-list');
+
+        if (addForm) {
+            addForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                var title = (addInput.value || '').trim();
+                if (!title) return;
+                var res = await fetch('/api/tasks/' + taskId + '/subtasks/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title: title, status: 'todo' })
+                });
+                if (res.ok) {
+                    location.reload();
+                }
+            });
+        }
+
+        if (listEl) {
+            listEl.addEventListener('change', async function (e) {
+                var t = e.target;
+                if (t && t.matches('input[type="checkbox"][data-subtask-id]')) {
+                    var sid = t.getAttribute('data-subtask-id');
+                    var status = t.checked ? 'done' : 'todo';
+                    await fetch('/api/tasks/' + taskId + '/subtasks/' + sid, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: status })
+                    });
+                }
+            });
+
+            listEl.addEventListener('click', async function (e) {
+                var btn = e.target.closest('[data-delete-subtask]');
+                if (!btn) return;
+                var sid = btn.getAttribute('data-delete-subtask');
+                var res = await fetch('/api/tasks/' + taskId + '/subtasks/' + sid, { method: 'DELETE' });
+                if (res.ok) {
+                    location.reload();
+                }
+            });
+        }
+    })();
+</script>
 {% endblock %}

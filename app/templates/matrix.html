@@ -5,14 +5,15 @@
 <h1 class="text-xl font-bold mb-3">Matrice d'Eisenhower</h1>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-	<div class="card">
+	<div class="card quadrant-dropzone" data-quadrant="1">
 		<div class="font-semibold mb-2">Q1 – À faire</div>
-		{% if q1|length == 0 %}
-		<div class="text-xs text-slate-400">Rien pour l’instant.</div>
-		{% else %}
-		<ul class="space-y-2 text-sm">
+		<ul class="space-y-2 text-sm min-h-[40px]">
+			{% if q1|length == 0 %}
+			<li class="text-xs text-slate-400 pointer-events-none empty-placeholder">Rien pour l'instant.</li>
+			{% else %}
 			{% for t in q1 %}
-			<li class="border-b border-slate-200/40 pb-2 last:border-b-0">
+			<li data-task-id="{{ t.id }}" class="border-b border-slate-200/40 pb-2 last:border-b-0">
+				<span class="drag-handle" title="Déplacer">☰</span>
 				<!-- Ligne titre + icônes de priorité + badge d'échéance aligné à droite -->
 				<div class="title-row">
 					<!-- Gauche : titre + 🔥⭐ -->
@@ -62,18 +63,19 @@
 				{% endif %}
 			</li>
 			{% endfor %}
+			{% endif %}
 		</ul>
-		{% endif %}
 	</div>
 
-	<div class="card">
+	<div class="card quadrant-dropzone" data-quadrant="2">
 		<div class="font-semibold mb-2">Q2 – Planifier</div>
-		{% if q2|length == 0 %}
-		<div class="text-xs text-slate-400">Rien pour l’instant.</div>
-		{% else %}
-		<ul class="space-y-2 text-sm">
+		<ul class="space-y-2 text-sm min-h-[40px]">
+			{% if q2|length == 0 %}
+			<li class="text-xs text-slate-400 pointer-events-none empty-placeholder">Rien pour l'instant.</li>
+			{% else %}
 			{% for t in q2 %}
-			<li class="border-b border-slate-200/40 pb-2 last:border-b-0">
+			<li data-task-id="{{ t.id }}" class="border-b border-slate-200/40 pb-2 last:border-b-0">
+				<span class="drag-handle" title="Déplacer">☰</span>
 				<!-- Ligne titre + icônes de priorité + badge d'échéance aligné à droite -->
 				<div class="title-row">
 					<!-- Gauche : titre + 🔥⭐ -->
@@ -119,18 +121,19 @@
 				</div>
 			</li>
 			{% endfor %}
+			{% endif %}
 		</ul>
-		{% endif %}
 	</div>
 
-	<div class="card">
+	<div class="card quadrant-dropzone" data-quadrant="3">
 		<div class="font-semibold mb-2">Q3 – Déléguer</div>
-		{% if q3|length == 0 %}
-		<div class="text-xs text-slate-400">Rien pour l’instant.</div>
-		{% else %}
-		<ul class="space-y-2 text-sm">
+		<ul class="space-y-2 text-sm min-h-[40px]">
+			{% if q3|length == 0 %}
+			<li class="text-xs text-slate-400 pointer-events-none empty-placeholder">Rien pour l'instant.</li>
+			{% else %}
 			{% for t in q3 %}
-			<li class="border-b border-slate-200/40 pb-2 last:border-b-0">
+			<li data-task-id="{{ t.id }}" class="border-b border-slate-200/40 pb-2 last:border-b-0">
+				<span class="drag-handle" title="Déplacer">☰</span>
 				<!-- Ligne titre + icônes de priorité + badge d'échéance aligné à droite -->
 				<div class="title-row">
 					<!-- Gauche : titre + 🔥⭐ -->
@@ -176,18 +179,19 @@
 				</div>
 			</li>
 			{% endfor %}
+			{% endif %}
 		</ul>
-		{% endif %}
 	</div>
 
-	<div class="card">
+	<div class="card quadrant-dropzone" data-quadrant="4">
 		<div class="font-semibold mb-2">Q4 – Éliminer</div>
-		{% if q4|length == 0 %}
-		<div class="text-xs text-slate-400">Rien pour l’instant.</div>
-		{% else %}
-		<ul class="space-y-2 text-sm">
+		<ul class="space-y-2 text-sm min-h-[40px]">
+			{% if q4|length == 0 %}
+			<li class="text-xs text-slate-400 pointer-events-none empty-placeholder">Rien pour l'instant.</li>
+			{% else %}
 			{% for t in q4 %}
-			<li class="border-b border-slate-200/40 pb-2 last:border-b-0">
+			<li data-task-id="{{ t.id }}" class="border-b border-slate-200/40 pb-2 last:border-b-0">
+				<span class="drag-handle" title="Déplacer">☰</span>
 				<!-- Ligne titre + icônes de priorité + badge d'échéance aligné à droite -->
 				<div class="title-row">
 					<!-- Gauche : titre + 🔥⭐ -->
@@ -233,9 +237,218 @@
 				</div>
 			</li>
 			{% endfor %}
+			{% endif %}
 		</ul>
-		{% endif %}
 	</div>
 
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<style>
+	/* indicate draggable items in the matrix */
+	.card ul li {
+		cursor: grab;
+		-webkit-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
+
+	.card ul li:active {
+		cursor: grabbing;
+	}
+
+	.drag-handle {
+		cursor: grab;
+		display: inline-block;
+		width: 20px;
+		text-align: center;
+		margin-right: 8px;
+		color: #888;
+		user-select: none;
+	}
+
+	.drag-handle:active {
+		cursor: grabbing;
+	}
+
+	/* Make the entire card area a drop zone */
+	.quadrant-dropzone {
+		position: relative;
+		min-height: 150px;
+	}
+
+	.quadrant-dropzone ul {
+		/* Fill the entire card height to maximize drop area */
+		min-height: 120px;
+		padding: 8px;
+		margin: -8px;
+		padding: 8px;
+	}
+
+	.quadrant-dropzone.drag-over {
+		background-color: rgba(59, 130, 246, 0.08);
+		box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.3);
+	}
+
+	.card ul li[draggable="true"] {
+		cursor: grab;
+	}
+
+	.card ul li.dragging {
+		opacity: 0.5;
+		cursor: grabbing;
+	}
+
+	.delete-btn {
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: 2px 4px;
+		font-size: 14px;
+		opacity: 0.6;
+		transition: opacity 0.2s;
+	}
+
+	.delete-btn:hover {
+		opacity: 1;
+	}
+</style>
+<script>
+	async function deleteTask(taskId) {
+		if (!confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) {
+			return;
+		}
+
+		try {
+			const response = await fetch(`/api/tasks/${taskId}`, {
+				method: 'DELETE'
+			});
+
+			if (response.ok) {
+				window.location.reload();
+			} else {
+				alert('Erreur lors de la suppression de la tâche');
+			}
+		} catch (err) {
+			console.error('Erreur:', err);
+			alert('Erreur lors de la suppression de la tâche');
+		}
+	}
+
+	document.addEventListener('DOMContentLoaded', function () {
+		let draggedElement = null;
+		let sourceList = null;
+
+		// Add delete buttons to all tasks
+		const allTaskItems = document.querySelectorAll('.card ul li[data-task-id]');
+		allTaskItems.forEach(item => {
+			const titleRow = item.querySelector('.title-row > div:last-child');
+			if (titleRow && !titleRow.querySelector('.delete-btn')) {
+				const deleteBtn = document.createElement('button');
+				deleteBtn.className = 'delete-btn';
+				deleteBtn.title = 'Supprimer';
+				deleteBtn.textContent = '🗑️';
+				deleteBtn.onclick = () => deleteTask(item.dataset.taskId);
+				titleRow.appendChild(deleteBtn);
+			}
+		});
+
+		// Make all task items draggable
+		allTaskItems.forEach(item => {
+			item.setAttribute('draggable', 'true');
+
+			item.addEventListener('dragstart', function (e) {
+				draggedElement = this;
+				sourceList = this.closest('ul');
+				this.classList.add('dragging');
+				e.dataTransfer.effectAllowed = 'move';
+				e.dataTransfer.setData('text/html', this.innerHTML);
+			});
+
+			item.addEventListener('dragend', function (e) {
+				this.classList.remove('dragging');
+				document.querySelectorAll('.drag-over').forEach(card => card.classList.remove('drag-over'));
+			});
+		});
+
+		// Make all quadrant cards drop zones
+		const cards = document.querySelectorAll('.quadrant-dropzone');
+		cards.forEach(card => {
+			const ul = card.querySelector('ul');
+
+			card.addEventListener('dragover', function (e) {
+				e.preventDefault();
+				e.dataTransfer.dropEffect = 'move';
+				this.classList.add('drag-over');
+			});
+
+			card.addEventListener('dragleave', function (e) {
+				// Only remove class if we're leaving the card itself
+				if (e.target === this) {
+					this.classList.remove('drag-over');
+				}
+			});
+
+			card.addEventListener('drop', async function (e) {
+				e.preventDefault();
+				this.classList.remove('drag-over');
+
+				if (!draggedElement) return;
+
+				const targetUl = this.querySelector('ul');
+				const quadrantNumber = parseInt(this.dataset.quadrant);
+				const taskId = draggedElement.dataset.taskId;
+
+				// Remove empty placeholder if exists
+				const placeholder = targetUl.querySelector('.empty-placeholder');
+				if (placeholder) placeholder.remove();
+
+				// Move the element
+				targetUl.appendChild(draggedElement);
+
+				// Update quadrant on server
+				try {
+					await fetch(`/api/tasks/${taskId}/quadrant`, {
+						method: 'PATCH',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ quadrant: quadrantNumber })
+					});
+				} catch (err) {
+					console.error('Failed to update quadrant', err);
+				}
+
+				// Update positions for both lists
+				const updatePositions = async (listEl) => {
+					const items = Array.from(listEl.querySelectorAll('li:not(.empty-placeholder)'));
+					const positions = items.map((it, i) => ({
+						id: Number(it.dataset.taskId),
+						position: i + 1
+					}));
+
+					if (positions.length > 0) {
+						await fetch('/api/tasks/reorder', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({ items: positions })
+						});
+					}
+				};
+
+				try {
+					await updatePositions(targetUl);
+					if (sourceList && sourceList !== targetUl) {
+						await updatePositions(sourceList);
+					}
+				} catch (err) {
+					console.error('Failed to update positions', err);
+				}
+
+				draggedElement = null;
+				sourceList = null;
+			});
+		});
+	});
+</script>
 {% endblock %}

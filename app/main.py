@@ -10,6 +10,7 @@ from urllib.parse import urlencode
 from .database import Base, engine, get_db
 from . import crud
 from .routers import tasks as tasks_router
+from .routers import subtasks as subtasks_router
 
 
 # Quadrants
@@ -70,6 +71,7 @@ templates = Jinja2Templates(directory="app/templates")
 
 # brancher les routes API REST
 app.include_router(tasks_router.router)
+app.include_router(subtasks_router.router)
 
 
 @app.get("/list", response_class=HTMLResponse)
@@ -312,6 +314,8 @@ def add_task_from_form(
     due_date: str = Form(""),
     description: str = Form(""),
     tag: str = Form(""),
+    recurrence_pattern: str = Form(""),
+    recurrence_end_date: str = Form(""),
     db: Session = Depends(get_db),
 ):
     # Normaliser statut initial
@@ -328,6 +332,8 @@ def add_task_from_form(
         due_date=due_date if due_date else None,
         tag=tag if tag else None,
         status=status_value,
+        recurrence_pattern=recurrence_pattern or None,
+        recurrence_end_date=recurrence_end_date if recurrence_end_date else None,
     )
 
     # Sauvegarder en base
@@ -377,11 +383,14 @@ def edit_task_page(
     if not task:
         raise HTTPException(status_code=404, detail="Tâche introuvable")
 
+    subtasks = crud.get_subtasks(db, task_id)
+
     return templates.TemplateResponse(
         "edit_task.html",
         {
             "request": request,
             "task": task,
+            "subtasks": subtasks,
         },
     )
 
@@ -392,6 +401,8 @@ def edit_task_submit(
     title: str = Form(...),
     description: str = Form(""),
     due_date: str = Form(""),
+    recurrence_pattern: str = Form(""),
+    recurrence_end_date: str = Form(""),
     urgent: bool = Form(False),
     important: bool = Form(False),
     tag: str = Form(""),
@@ -406,6 +417,8 @@ def edit_task_submit(
         urgent=urgent,
         important=important,
         tag=tag if tag else None,
+        recurrence_pattern=recurrence_pattern or None,
+        recurrence_end_date=recurrence_end_date if recurrence_end_date else None,
     )
 
     updated = crud.update_task(db, task_id, task_in)

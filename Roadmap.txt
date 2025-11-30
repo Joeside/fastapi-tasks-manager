@@ -7,7 +7,7 @@ Gestion du temps – Roadmap produit
 │   ├── Ajout / Terminer / Rétablir
 │   └── Design minimal Tailwind
 │
-├── Phase 2 — UX & Design 🎨 (en cours)
+├── Phase 2 — UX & Design 🎨 ✅ (complétée)
 │   ├── Refonte visuelle cohérente
 │   │   ├── Création fichier app.css (design system)
 │   │   ├── Styles unifiés : boutons, badges, cartes
@@ -21,23 +21,33 @@ Gestion du temps – Roadmap produit
 │   │   └── Messages de confirmation légers
 │   └── Petites animations (transition des statuts)
 │
-├── Phase 3 — Fonctionnalités Avancées ⚙️
-│   ├── Filtres & tri
-│   │   ├── Par priorité / statut / échéance
-│   │   └── Barre d’outils en haut de la liste
-│   ├── Gestion du temps
-│   │   ├── Échéances + alertes couleur
-│   │   ├── Tâches récurrentes (hebdo, mensuelles)
-│   │   └── Chrono ou suivi de temps optionnel
-│   ├── Catégorisation
-│   │   ├── Tags / Projets
-│   │   └── Filtrage par projet
-│   ├── Statistiques améliorées
-│   │   ├── Graphiques hebdomadaires
-│   │   └── Moyenne de productivité
-│   └── Personnalisation
-│       ├── Page “Paramètres” (nom, thème, préférences)
-│       └── Sauvegarde locale automatique
+├── Phase 3 — Fonctionnalités Avancées ⚙️ ✅ (complétée - v0.5)
+│   ├── Filtres & tri ✅
+│   │   ├── Par priorité / statut / échéance ✅
+│   │   └── Barre d'outils en haut de la liste ✅
+│   ├── Gestion du temps ✅
+│   │   ├── Échéances + alertes couleur ✅
+│   │   ├── Tâches récurrentes (quotidiennes, hebdo, mensuelles, annuelles) ✅
+│   │   └── Chrono ou suivi de temps optionnel ⏳
+│   ├── Sous-tâches ✅
+│   │   ├── Décomposition des tâches en étapes ✅
+│   │   ├── Gestion complète (ajout/modification/suppression) ✅
+│   │   └── API REST dédiée ✅
+│   ├── Drag & Drop amélioré ✅
+│   │   ├── Zone permissive dans la matrice ✅
+│   │   └── Support des quadrants vides ✅
+│   ├── Suppression de tâches ✅
+│   │   ├── Bouton 🗑️ dans toutes les vues ✅
+│   │   └── Confirmation avant suppression ✅
+│   ├── Catégorisation ⏳
+│   │   ├── Tags / Projets ⏳
+│   │   └── Filtrage par projet ⏳
+│   ├── Statistiques améliorées ⏳
+│   │   ├── Graphiques hebdomadaires ⏳
+│   │   └── Moyenne de productivité ⏳
+│   └── Personnalisation ⏳
+│       ├── Page "Paramètres" (nom, thème, préférences) ⏳
+│       └── Sauvegarde locale automatique ⏳
 │
 ├── Phase 4 — Tests utilisateurs 🧪
 │   ├── Hébergement sur Render (ou Railway)

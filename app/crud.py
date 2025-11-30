@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func, case
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta, date
+import calendar
 from typing import Optional, List, Dict
 from . import models, schemas
 
@@ -58,6 +59,8 @@ def create_task(db: Session, task_in: schemas.TaskCreate) -> models.Task:
         tag=tag_val,
         position=position_val,
         quadrant=quadrant_val,
+        recurrence_pattern=getattr(task_in, "recurrence_pattern", None),
+        recurrence_end_date=getattr(task_in, "recurrence_end_date", None),
     )
     db.add(task)
     db.commit()
@@ -154,6 +157,8 @@ def update_task(
     if not task:
         return None
 
+    prev_status = task.status
+
     dumped = task_in.model_dump(exclude_unset=True)
     for field, value in dumped.items():
         # Normalize tag on update as well
@@ -179,9 +184,117 @@ def update_task(
     if task.status == "done" and task.completed_at is None:
         task.completed_at = datetime.now(timezone.utc)
 
+    # Handle recurrence: on transition to done, create next occurrence
+    if prev_status != "done" and task.status == "done":
+        _maybe_create_next_occurrence(db, task)
+
     db.commit()
     db.refresh(task)
     return task
+
+
+def set_task_position(
+    db: Session, task_id: int, position: Optional[int]
+) -> Optional[models.Task]:
+    """Set the `position` of a single task. Returns the updated task or None if not found."""
+    task = get_task(db, task_id)
+    if not task:
+        return None
+
+    # Allow nullable positions
+    task.position = int(position) if position is not None else None
+    task.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(task)
+    return task
+
+
+def set_task_quadrant(
+    db: Session, task_id: int, quadrant: Optional[int]
+) -> Optional[models.Task]:
+    """Set the `quadrant` of a task and update urgent/important flags accordingly.
+
+    Quadrant mapping (Eisenhower):
+      1 -> urgent=True, important=True
+      2 -> urgent=False, important=True
+      3 -> urgent=True, important=False
+      4 -> urgent=False, important=False
+
+    Accepts None to clear quadrant (does not change flags in that case).
+    """
+    task = get_task(db, task_id)
+    if not task:
+        return None
+
+    if quadrant is None:
+        task.quadrant = None
+    else:
+        try:
+            q = int(quadrant)
+        except Exception:
+            return None
+        task.quadrant = q
+        # Update flags based on quadrant
+        if q == 1:
+            task.urgent = True
+            task.important = True
+        elif q == 2:
+            task.urgent = False
+            task.important = True
+        elif q == 3:
+            task.urgent = True
+            task.important = False
+        else:
+            task.urgent = False
+            task.important = False
+
+    task.updated_at = datetime.now(timezone.utc)
+    # If marking done state not changed here
+    db.commit()
+    db.refresh(task)
+    return task
+
+
+def set_positions_bulk(db: Session, items: list) -> list:
+    """Set positions for multiple tasks in a single transaction.
+
+    `items` is an iterable of objects with attributes `id` and `position`.
+    Returns the list of updated Task objects.
+    """
+    if not items:
+        return []
+
+    ids = [
+        int(getattr(it, "id", it["id"])) if isinstance(it, dict) else int(it.id)
+        for it in items
+    ]
+    # Fetch existing tasks
+    tasks = db.query(models.Task).filter(models.Task.id.in_(ids)).all()
+    task_map = {t.id: t for t in tasks}
+
+    updated = []
+    now = datetime.now(timezone.utc)
+    for it in items:
+        if isinstance(it, dict):
+            tid = int(it.get("id"))
+            pos = it.get("position")
+        else:
+            tid = int(it.id)
+            pos = it.position
+
+        task = task_map.get(tid)
+        if not task:
+            continue
+        task.position = int(pos) if pos is not None else None
+        task.updated_at = now
+        updated.append(task)
+
+    db.commit()
+    # refresh updated tasks
+    for t in updated:
+        db.refresh(t)
+
+    return updated
 
 
 def delete_task(db: Session, task_id: int) -> Optional[bool]:
@@ -238,3 +351,181 @@ def get_eisenhower_stats(db: Session, status: Optional[str] = None) -> Dict[str,
         "q3": stats.q3 or 0,
         "q4": stats.q4 or 0,
     }
+
+
+# ===== v0.5: Subtasks CRUD =====
+
+
+def create_subtask(
+    db: Session, task_id: int, subtask_in: schemas.SubtaskCreate
+) -> Optional[models.Subtask]:
+    """Create a subtask for a task. Returns the new subtask or None if parent task not found."""
+    parent = get_task(db, task_id)
+    if not parent:
+        return None
+
+    # Determine position: use provided or set to next available
+    provided_position = getattr(subtask_in, "position", None)
+    if provided_position is None:
+        max_pos = (
+            db.query(func.max(models.Subtask.position))
+            .filter(models.Subtask.task_id == task_id)
+            .scalar()
+        )
+        try:
+            next_pos = (int(max_pos) if max_pos is not None else 0) + 1
+        except Exception:
+            next_pos = 1
+        position_val = next_pos
+    else:
+        position_val = provided_position
+
+    subtask = models.Subtask(
+        task_id=task_id,
+        title=subtask_in.title,
+        status=subtask_in.status,
+        position=position_val,
+    )
+    db.add(subtask)
+    db.commit()
+    db.refresh(subtask)
+    return subtask
+
+
+def get_subtasks(db: Session, task_id: int) -> List[models.Subtask]:
+    """Return all subtasks for a task, ordered by position."""
+    return (
+        db.query(models.Subtask)
+        .filter(models.Subtask.task_id == task_id)
+        .order_by(models.Subtask.position.asc().nullslast())
+        .all()
+    )
+
+
+def get_subtask(db: Session, subtask_id: int) -> Optional[models.Subtask]:
+    """Get a single subtask by ID."""
+    return db.query(models.Subtask).filter(models.Subtask.id == subtask_id).first()
+
+
+def update_subtask(
+    db: Session, subtask_id: int, subtask_in: schemas.SubtaskUpdate
+) -> Optional[models.Subtask]:
+    """Update a subtask. Returns the updated subtask or None if not found."""
+    subtask = get_subtask(db, subtask_id)
+    if not subtask:
+        return None
+
+    dumped = subtask_in.model_dump(exclude_unset=True)
+    for field, value in dumped.items():
+        setattr(subtask, field, value)
+
+    db.commit()
+    db.refresh(subtask)
+    return subtask
+
+
+def delete_subtask(db: Session, subtask_id: int) -> Optional[bool]:
+    """Delete a subtask. Returns True if deleted, None if not found."""
+    subtask = get_subtask(db, subtask_id)
+    if not subtask:
+        return None
+
+    db.delete(subtask)
+    db.commit()
+    return True
+
+
+# ===== Helpers: recurrence and subtask reordering =====
+
+
+def _add_months(d: date, months: int = 1) -> date:
+    """Add months to a date, clamping to last valid day of target month."""
+    y = d.year + (d.month - 1 + months) // 12
+    m = (d.month - 1 + months) % 12 + 1
+    last_day = calendar.monthrange(y, m)[1]
+    day = min(d.day, last_day)
+    return date(y, m, day)
+
+
+def _next_due_date(
+    pattern: Optional[str], current_due: Optional[date]
+) -> Optional[date]:
+    if not pattern:
+        return None
+    base = current_due or date.today()
+    if pattern == "daily":
+        return base + timedelta(days=1)
+    if pattern == "weekly":
+        return base + timedelta(weeks=1)
+    if pattern == "monthly":
+        return _add_months(base, 1)
+    if pattern == "yearly":
+        return _add_months(base, 12)
+    return None
+
+
+def _maybe_create_next_occurrence(
+    db: Session, completed: models.Task
+) -> Optional[models.Task]:
+    pattern = completed.recurrence_pattern
+    if not pattern:
+        return None
+    nd = _next_due_date(pattern, completed.due_date)
+    if nd is None:
+        return None
+    # Respect end date
+    if completed.recurrence_end_date and nd > completed.recurrence_end_date:
+        return None
+
+    # Create the next occurrence copying most fields
+    create_in = schemas.TaskCreate(
+        title=completed.title,
+        description=completed.description,
+        urgent=completed.urgent,
+        important=completed.important,
+        due_date=nd,
+        status="todo",
+        tag=completed.tag,
+        position=None,  # will auto-assign
+        quadrant=completed.quadrant,
+        recurrence_pattern=completed.recurrence_pattern,
+        recurrence_end_date=completed.recurrence_end_date,
+    )
+    next_task = create_task(db, create_in)
+    return next_task
+
+
+def set_subtask_positions_bulk(db: Session, task_id: int, items: list) -> list:
+    """Set positions for multiple subtasks belonging to a task.
+
+    Items is a list of objects/dicts with `id` and `position`.
+    Only subtasks with matching task_id are updated.
+    """
+    if not items:
+        return []
+
+    ids = [
+        int(getattr(it, "id", it["id"])) if isinstance(it, dict) else int(it.id)
+        for it in items
+    ]
+    subtasks = db.query(models.Subtask).filter(models.Subtask.id.in_(ids)).all()
+    sub_map = {s.id: s for s in subtasks}
+
+    updated = []
+    for it in items:
+        if isinstance(it, dict):
+            sid = int(it.get("id"))
+            pos = it.get("position")
+        else:
+            sid = int(it.id)
+            pos = it.position
+        s = sub_map.get(sid)
+        if not s or s.task_id != task_id:
+            continue
+        s.position = int(pos) if pos is not None else None
+        updated.append(s)
+
+    db.commit()
+    for s in updated:
+        db.refresh(s)
+    return updated
