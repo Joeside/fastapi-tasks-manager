@@ -15,7 +15,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 config = context.config
 
 # Interpret the config file for Python logging.
-fileConfig(config.config_file_name)
+try:
+    fileConfig(config.config_file_name)
+except Exception:
+    # If logging configuration is missing or malformed, continue without it.
+    pass
 
 # Import your model's MetaData object for 'autogenerate'
 from app.database import Base, SQLALCHEMY_DATABASE_URL  # noqa: E402

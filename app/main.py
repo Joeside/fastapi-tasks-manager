@@ -80,7 +80,8 @@ def page_list(
     urgent_f: Optional[str] = None,  # "all" | "yes" | "no"
     important_f: Optional[str] = None,  # "all" | "yes" | "no"
     q: Optional[str] = None,  # recherche texte
-    sort: Optional[str] = None,  # "created_desc" | "due_asc" | "due_desc"
+    tag: Optional[str] = None,  # filter by tag
+    sort: Optional[str] = None,  # "created_desc" | "due_asc" | "due_desc" | "position"
 ):
     def yesno(val: Optional[str]):
         if val is None or val == "" or val == "all":
@@ -92,6 +93,7 @@ def page_list(
     urgent_val = yesno(urgent_f)
     important_val = yesno(important_f)
     search_query = q.strip() if q else None
+    tag_query = tag.strip() if tag else None
     sort_key = sort or "created_desc"
 
     tasks = crud.get_tasks(
@@ -100,6 +102,7 @@ def page_list(
         urgent=urgent_val,
         important=important_val,
         q=search_query,
+        tag=tag_query,
         sort=sort_key,
     )
     total_count = crud.get_tasks_count(db)
@@ -149,6 +152,7 @@ def page_list(
         "urgent_f": urgent_f or "all",
         "important_f": important_f or "all",
         "q": (q or "").strip(),
+        "tag": tag or "",
         "sort": sort or "created_desc",
     }
 
@@ -156,6 +160,8 @@ def page_list(
         if key in ("status_f", "urgent_f", "important_f"):
             return val not in ("", None, "all")
         if key == "q":
+            return bool(val)
+        if key == "tag":
             return bool(val)
         if key == "sort":
             return False
@@ -168,6 +174,9 @@ def page_list(
                 if v and v != "all":
                     keep[k] = v
             elif k == "q":
+                if v:
+                    keep[k] = v
+            elif k == "tag":
                 if v:
                     keep[k] = v
             elif k == "sort":
@@ -188,6 +197,7 @@ def page_list(
         "urgent_f": url_without("urgent_f"),
         "important_f": url_without("important_f"),
         "q": url_without("q"),
+        "tag": "/list",
         "all": "/list",
     }
 
@@ -301,6 +311,7 @@ def add_task_from_form(
     important: bool = Form(False),
     due_date: str = Form(""),
     description: str = Form(""),
+    tag: str = Form(""),
     db: Session = Depends(get_db),
 ):
     # Normaliser statut initial
@@ -315,6 +326,7 @@ def add_task_from_form(
         urgent=urgent,
         important=important,
         due_date=due_date if due_date else None,
+        tag=tag if tag else None,
         status=status_value,
     )
 
@@ -382,6 +394,7 @@ def edit_task_submit(
     due_date: str = Form(""),
     urgent: bool = Form(False),
     important: bool = Form(False),
+    tag: str = Form(""),
     db: Session = Depends(get_db),
 ):
     from . import schemas
@@ -392,6 +405,7 @@ def edit_task_submit(
         due_date=due_date if due_date else None,
         urgent=urgent,
         important=important,
+        tag=tag if tag else None,
     )
 
     updated = crud.update_task(db, task_id, task_in)

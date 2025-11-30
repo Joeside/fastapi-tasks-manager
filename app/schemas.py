@@ -10,6 +10,10 @@ class TaskBase(BaseModel):
     important: bool
     due_date: Optional[date] = None  # date (YYYY-MM-DD)
     status: str = "todo"  # "todo" / "done"
+    # optional fields
+    tag: Optional[str] = None
+    position: Optional[int] = None
+    quadrant: Optional[int] = None
 
 
 class TaskCreate(TaskBase):
@@ -24,6 +28,9 @@ class TaskUpdate(BaseModel):
     due_date: Optional[date] = None
     status: Optional[str] = None
     completed_at: Optional[datetime] = None
+    tag: Optional[str] = None
+    position: Optional[int] = None
+    quadrant: Optional[int] = None
 
 
 class TaskOut(TaskBase):
@@ -31,5 +38,6 @@ class TaskOut(TaskBase):
     created_at: datetime
     updated_at: datetime
     completed_at: Optional[datetime] = None
+    quadrant: Optional[int] = None
 
     model_config = ConfigDict(from_attributes=True)

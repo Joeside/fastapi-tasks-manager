@@ -5,11 +5,49 @@ from typing import Optional, List, Dict
 from . import models, schemas
 
 
+def _compute_quadrant_val(urgent: bool, important: bool) -> int:
+    """Return the Eisenhower quadrant number (1..4) from urgent/important flags."""
+    if important and urgent:
+        return 1
+    if important and not urgent:
+        return 2
+    if not important and urgent:
+        return 3
+    return 4
+
+
 def create_task(db: Session, task_in: schemas.TaskCreate) -> models.Task:
     """Create a Task from a `schemas.TaskCreate` and persist it.
 
     Returns the newly created `models.Task`.
     """
+    # quadrant: respect provided value if present, otherwise compute from flags
+    quadrant_val = None
+    if getattr(task_in, "quadrant", None) is not None:
+        quadrant_val = task_in.quadrant
+    else:
+        quadrant_val = _compute_quadrant_val(task_in.urgent, task_in.important)
+
+    # Determine position: use provided value, otherwise set to next available
+    provided_position = getattr(task_in, "position", None)
+    if provided_position is None:
+        max_pos = db.query(func.max(models.Task.position)).scalar()
+        try:
+            next_pos = (int(max_pos) if max_pos is not None else 0) + 1
+        except Exception:
+            next_pos = 1
+        position_val = next_pos
+    else:
+        position_val = provided_position
+
+    # Normalize tag to lowercase (case-insensitive handling)
+    raw_tag = getattr(task_in, "tag", None)
+    if raw_tag is None:
+        tag_val = None
+    else:
+        t = raw_tag.strip()
+        tag_val = t.lower() if t != "" else None
+
     task = models.Task(
         title=task_in.title,
         description=task_in.description,
@@ -17,6 +55,9 @@ def create_task(db: Session, task_in: schemas.TaskCreate) -> models.Task:
         important=task_in.important,
         due_date=task_in.due_date,
         status=task_in.status,
+        tag=tag_val,
+        position=position_val,
+        quadrant=quadrant_val,
     )
     db.add(task)
     db.commit()
@@ -30,6 +71,7 @@ def get_tasks(
     urgent: Optional[bool] = None,
     important: Optional[bool] = None,
     q: Optional[str] = None,
+    tag: Optional[str] = None,
     sort: Optional[str] = None,
 ) -> List[models.Task]:
     """Return a list of tasks filtered by the provided options.
@@ -51,6 +93,9 @@ def get_tasks(
             (func.lower(models.Task.title).like(search_term))
             | (func.lower(models.Task.description).like(search_term))
         )
+    if tag:
+        # Case-insensitive comparison: compare lower(tag) == lower(param)
+        query = query.filter(func.lower(models.Task.tag) == tag.lower())
 
     sort_key = sort or "created_desc"
     if sort_key == "due_asc":
@@ -61,6 +106,9 @@ def get_tasks(
     elif sort_key == "due_desc":
         # Tâches avec date en premier, par date décroissante
         query = query.order_by(models.Task.due_date.desc().nullslast())
+    elif sort_key == "position":
+        # Trier par position croissante; les positions NULL restent en fin
+        query = query.order_by(models.Task.position.asc().nullslast())
     else:  # "created_desc"
         query = query.order_by(models.Task.created_at.desc())
 
@@ -106,8 +154,25 @@ def update_task(
     if not task:
         return None
 
-    for field, value in task_in.model_dump(exclude_unset=True).items():
-        setattr(task, field, value)
+    dumped = task_in.model_dump(exclude_unset=True)
+    for field, value in dumped.items():
+        # Normalize tag on update as well
+        if field == "tag":
+            if value is None:
+                norm = None
+            else:
+                s = str(value).strip()
+                norm = s.lower() if s != "" else None
+            setattr(task, field, norm)
+        else:
+            setattr(task, field, value)
+
+    # If quadrant was not provided explicitly, recompute it from flags
+    if "quadrant" not in dumped:
+        try:
+            task.quadrant = _compute_quadrant_val(task.urgent, task.important)
+        except Exception:
+            task.quadrant = None
 
     task.updated_at = datetime.now(timezone.utc)
 

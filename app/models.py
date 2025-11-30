@@ -15,6 +15,11 @@ class Task(Base):
     important = Column(Boolean, default=False)
 
     due_date = Column(Date, nullable=True)  # stored as date (YYYY-MM-DD)
+    # new fields
+    tag = Column(String, nullable=True)
+    position = Column(Integer, nullable=True)
+    # store quadrant as integer 1..4 (Eisenhower quadrant)
+    quadrant = Column(Integer, nullable=True)
     status = Column(String, default="todo")  # "todo" / "done"
 
     created_at = Column(
