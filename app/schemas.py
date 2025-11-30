@@ -15,7 +15,7 @@ class TaskBase(BaseModel):
     position: Optional[int] = None
     quadrant: Optional[int] = None
     # v0.5: recurrence fields
-    recurrence_pattern: Optional[str] = None  # "daily", "weekly", "monthly"
+    recurrence_pattern: Optional[str] = None  # "daily", "weekly", "monthly", "yearly"
     recurrence_end_date: Optional[date] = None
 
 
