@@ -56,6 +56,10 @@
 					<span class="badge badge-done">Fait</span>
 					{% endif %}
 				</div>
+
+				{% if t.tag %}
+				<div class="text-xs text-slate-400 mt-1">Tag: <span class="font-medium">{{ t.tag }}</span></div>
+				{% endif %}
 			</li>
 			{% endfor %}
 		</ul>
