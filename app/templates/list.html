@@ -52,6 +52,7 @@
         <option value="daily">Quotidienne</option>
         <option value="weekly">Hebdomadaire</option>
         <option value="monthly">Mensuelle</option>
+        <option value="yearly">Annuelle</option>
       </select>
     </div>
 
@@ -275,9 +276,14 @@
         </td>
 
         <td class="space-y-1">
-          <a href="/list/edit/{{ t.id }}" class="btn btn-secondary btn-sm w-full">
-            Modifier
-          </a>
+          <div class="flex items-center gap-1">
+            <a href="/list/edit/{{ t.id }}" class="btn btn-secondary btn-sm flex-1">
+              Modifier
+            </a>
+            <button onclick="deleteTask({{ t.id }})" class="btn btn-secondary btn-sm px-2" title="Supprimer">
+              🗑️
+            </button>
+          </div>
 
           {% if t.status != "done" %}
           <form method="post" action="/list/complete/{{ t.id }}">
@@ -356,10 +362,15 @@
           <span class="badge badge-done">Fait</span>
         </td>
 
-        <td>
-          <form method="post" action="/list/reopen/{{ t.id }}">
-            <button class="btn btn-secondary btn-sm w-full">Rétablir</button>
-          </form>
+        <td class="space-y-1">
+          <div class="flex items-center gap-1">
+            <form method="post" action="/list/reopen/{{ t.id }}" class="flex-1">
+              <button class="btn btn-secondary btn-sm w-full">Rétablir</button>
+            </form>
+            <button onclick="deleteTask({{ t.id }})" class="btn btn-secondary btn-sm px-2" title="Supprimer">
+              🗑️
+            </button>
+          </div>
         </td>
       </tr>
       {% endfor %}
@@ -423,5 +434,27 @@
       },
     });
   });
+
+  async function deleteTask(taskId) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        // Recharger la page pour mettre à jour la liste
+        window.location.reload();
+      } else {
+        alert('Erreur lors de la suppression de la tâche');
+      }
+    } catch (err) {
+      console.error('Erreur:', err);
+      alert('Erreur lors de la suppression de la tâche');
+    }
+  }
 </script>
 {% endblock %}

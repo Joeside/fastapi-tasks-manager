@@ -461,6 +461,8 @@ def _next_due_date(
         return base + timedelta(weeks=1)
     if pattern == "monthly":
         return _add_months(base, 1)
+    if pattern == "yearly":
+        return _add_months(base, 12)
     return None
 
 

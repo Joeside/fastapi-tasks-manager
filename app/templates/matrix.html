@@ -5,12 +5,12 @@
 <h1 class="text-xl font-bold mb-3">Matrice d'Eisenhower</h1>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-	<div class="card">
+	<div class="card quadrant-dropzone" data-quadrant="1">
 		<div class="font-semibold mb-2">Q1 – À faire</div>
-		{% if q1|length == 0 %}
-		<div class="text-xs text-slate-400">Rien pour l’instant.</div>
-		{% else %}
-		<ul class="space-y-2 text-sm">
+		<ul class="space-y-2 text-sm min-h-[40px]">
+			{% if q1|length == 0 %}
+			<li class="text-xs text-slate-400 pointer-events-none empty-placeholder">Rien pour l'instant.</li>
+			{% else %}
 			{% for t in q1 %}
 			<li data-task-id="{{ t.id }}" class="border-b border-slate-200/40 pb-2 last:border-b-0">
 				<span class="drag-handle" title="Déplacer">☰</span>
@@ -63,16 +63,16 @@
 				{% endif %}
 			</li>
 			{% endfor %}
+			{% endif %}
 		</ul>
-		{% endif %}
 	</div>
 
-	<div class="card">
+	<div class="card quadrant-dropzone" data-quadrant="2">
 		<div class="font-semibold mb-2">Q2 – Planifier</div>
-		{% if q2|length == 0 %}
-		<div class="text-xs text-slate-400">Rien pour l’instant.</div>
-		{% else %}
-		<ul class="space-y-2 text-sm">
+		<ul class="space-y-2 text-sm min-h-[40px]">
+			{% if q2|length == 0 %}
+			<li class="text-xs text-slate-400 pointer-events-none empty-placeholder">Rien pour l'instant.</li>
+			{% else %}
 			{% for t in q2 %}
 			<li data-task-id="{{ t.id }}" class="border-b border-slate-200/40 pb-2 last:border-b-0">
 				<span class="drag-handle" title="Déplacer">☰</span>
@@ -121,16 +121,16 @@
 				</div>
 			</li>
 			{% endfor %}
+			{% endif %}
 		</ul>
-		{% endif %}
 	</div>
 
-	<div class="card">
+	<div class="card quadrant-dropzone" data-quadrant="3">
 		<div class="font-semibold mb-2">Q3 – Déléguer</div>
-		{% if q3|length == 0 %}
-		<div class="text-xs text-slate-400">Rien pour l’instant.</div>
-		{% else %}
-		<ul class="space-y-2 text-sm">
+		<ul class="space-y-2 text-sm min-h-[40px]">
+			{% if q3|length == 0 %}
+			<li class="text-xs text-slate-400 pointer-events-none empty-placeholder">Rien pour l'instant.</li>
+			{% else %}
 			{% for t in q3 %}
 			<li data-task-id="{{ t.id }}" class="border-b border-slate-200/40 pb-2 last:border-b-0">
 				<span class="drag-handle" title="Déplacer">☰</span>
@@ -179,16 +179,16 @@
 				</div>
 			</li>
 			{% endfor %}
+			{% endif %}
 		</ul>
-		{% endif %}
 	</div>
 
-	<div class="card">
+	<div class="card quadrant-dropzone" data-quadrant="4">
 		<div class="font-semibold mb-2">Q4 – Éliminer</div>
-		{% if q4|length == 0 %}
-		<div class="text-xs text-slate-400">Rien pour l’instant.</div>
-		{% else %}
-		<ul class="space-y-2 text-sm">
+		<ul class="space-y-2 text-sm min-h-[40px]">
+			{% if q4|length == 0 %}
+			<li class="text-xs text-slate-400 pointer-events-none empty-placeholder">Rien pour l'instant.</li>
+			{% else %}
 			{% for t in q4 %}
 			<li data-task-id="{{ t.id }}" class="border-b border-slate-200/40 pb-2 last:border-b-0">
 				<span class="drag-handle" title="Déplacer">☰</span>
@@ -237,8 +237,8 @@
 				</div>
 			</li>
 			{% endfor %}
+			{% endif %}
 		</ul>
-		{% endif %}
 	</div>
 
 </div>
@@ -272,72 +272,181 @@
 	.drag-handle:active {
 		cursor: grabbing;
 	}
+
+	/* Make the entire card area a drop zone */
+	.quadrant-dropzone {
+		position: relative;
+		min-height: 150px;
+	}
+
+	.quadrant-dropzone ul {
+		/* Fill the entire card height to maximize drop area */
+		min-height: 120px;
+		padding: 8px;
+		margin: -8px;
+		padding: 8px;
+	}
+
+	.quadrant-dropzone.drag-over {
+		background-color: rgba(59, 130, 246, 0.08);
+		box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.3);
+	}
+
+	.card ul li[draggable="true"] {
+		cursor: grab;
+	}
+
+	.card ul li.dragging {
+		opacity: 0.5;
+		cursor: grabbing;
+	}
+
+	.delete-btn {
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: 2px 4px;
+		font-size: 14px;
+		opacity: 0.6;
+		transition: opacity 0.2s;
+	}
+
+	.delete-btn:hover {
+		opacity: 1;
+	}
 </style>
 <script>
-	document.addEventListener('DOMContentLoaded', function () {
-		// Find all quadrant lists (the <ul> elements inside each card)
-		const lists = Array.from(document.querySelectorAll('.card ul'));
-		if (!lists.length || typeof Sortable === 'undefined') return;
-
-		// Helper to update positions of items inside a list (1-based)
-		async function updatePositionsInList(listEl) {
-			const items = Array.from(listEl.querySelectorAll('li'));
-			let pos = 1;
-			const promises = [];
-			for (const it of items) {
-				const id = it.dataset.taskId;
-				if (!id) continue;
-				promises.push(fetch(`/api/tasks/${id}/position`, {
-					method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ position: pos })
-				}));
-				pos++;
-			}
-			try { await Promise.all(promises); } catch (e) { console.error('Position update error', e); }
+	async function deleteTask(taskId) {
+		if (!confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) {
+			return;
 		}
 
-		lists.forEach((ul, idx) => {
-			Sortable.create(ul, {
-				onStart: function () { document.body.style.userSelect = 'none'; },
-				handle: '.drag-handle',
-				group: 'matrix',
-				animation: 150,
-				onAdd: async function (evt) {
-					// When item is moved into this list, update quadrant then positions
-					const item = evt.item;
-					const id = item.dataset.taskId;
-					const target = evt.to;
-					// Quadrant number mapping based on column index (q1..q4)
-					// We rely on the ordering of lists in the template: q1,q2,q3,q4
-					const quadrantIndex = lists.indexOf(target);
-					const quadrantNumber = quadrantIndex + 1;
+		try {
+			const response = await fetch(`/api/tasks/${taskId}`, {
+				method: 'DELETE'
+			});
 
-					try {
-						await fetch(`/api/tasks/${id}/quadrant`, {
-							method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-							body: JSON.stringify({ quadrant: quadrantNumber })
-						});
-					} catch (e) {
-						console.error('Failed to update quadrant', e);
-					}
+			if (response.ok) {
+				window.location.reload();
+			} else {
+				alert('Erreur lors de la suppression de la tâche');
+			}
+		} catch (err) {
+			console.error('Erreur:', err);
+			alert('Erreur lors de la suppression de la tâche');
+		}
+	}
 
-					// Recalculate positions within target list and source list using bulk endpoint
-					const targetItems = Array.from(target.querySelectorAll('li')).map((it, i) => ({ id: Number(it.dataset.taskId), position: i + 1 }));
-					const fromItems = evt.from ? Array.from(evt.from.querySelectorAll('li')).map((it, i) => ({ id: Number(it.dataset.taskId), position: i + 1 })) : [];
+	document.addEventListener('DOMContentLoaded', function () {
+		let draggedElement = null;
+		let sourceList = null;
 
-					try {
-						if (targetItems.length) await fetch('/api/tasks/reorder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: targetItems }) });
-						if (fromItems.length) await fetch('/api/tasks/reorder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: fromItems }) });
-					} catch (e) {
-						console.error('Failed to bulk update positions after move', e);
-					}
-				},
-				onUpdate: async function (evt) {
-					// Reordering within same quadrant: update positions
-					const listEl = evt.from;
-					await updatePositionsInList(listEl);
+		// Add delete buttons to all tasks
+		const allTaskItems = document.querySelectorAll('.card ul li[data-task-id]');
+		allTaskItems.forEach(item => {
+			const titleRow = item.querySelector('.title-row > div:last-child');
+			if (titleRow && !titleRow.querySelector('.delete-btn')) {
+				const deleteBtn = document.createElement('button');
+				deleteBtn.className = 'delete-btn';
+				deleteBtn.title = 'Supprimer';
+				deleteBtn.textContent = '🗑️';
+				deleteBtn.onclick = () => deleteTask(item.dataset.taskId);
+				titleRow.appendChild(deleteBtn);
+			}
+		});
+
+		// Make all task items draggable
+		allTaskItems.forEach(item => {
+			item.setAttribute('draggable', 'true');
+
+			item.addEventListener('dragstart', function (e) {
+				draggedElement = this;
+				sourceList = this.closest('ul');
+				this.classList.add('dragging');
+				e.dataTransfer.effectAllowed = 'move';
+				e.dataTransfer.setData('text/html', this.innerHTML);
+			});
+
+			item.addEventListener('dragend', function (e) {
+				this.classList.remove('dragging');
+				document.querySelectorAll('.drag-over').forEach(card => card.classList.remove('drag-over'));
+			});
+		});
+
+		// Make all quadrant cards drop zones
+		const cards = document.querySelectorAll('.quadrant-dropzone');
+		cards.forEach(card => {
+			const ul = card.querySelector('ul');
+
+			card.addEventListener('dragover', function (e) {
+				e.preventDefault();
+				e.dataTransfer.dropEffect = 'move';
+				this.classList.add('drag-over');
+			});
+
+			card.addEventListener('dragleave', function (e) {
+				// Only remove class if we're leaving the card itself
+				if (e.target === this) {
+					this.classList.remove('drag-over');
 				}
-				, onEnd: function () { document.body.style.userSelect = ''; }
+			});
+
+			card.addEventListener('drop', async function (e) {
+				e.preventDefault();
+				this.classList.remove('drag-over');
+
+				if (!draggedElement) return;
+
+				const targetUl = this.querySelector('ul');
+				const quadrantNumber = parseInt(this.dataset.quadrant);
+				const taskId = draggedElement.dataset.taskId;
+
+				// Remove empty placeholder if exists
+				const placeholder = targetUl.querySelector('.empty-placeholder');
+				if (placeholder) placeholder.remove();
+
+				// Move the element
+				targetUl.appendChild(draggedElement);
+
+				// Update quadrant on server
+				try {
+					await fetch(`/api/tasks/${taskId}/quadrant`, {
+						method: 'PATCH',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ quadrant: quadrantNumber })
+					});
+				} catch (err) {
+					console.error('Failed to update quadrant', err);
+				}
+
+				// Update positions for both lists
+				const updatePositions = async (listEl) => {
+					const items = Array.from(listEl.querySelectorAll('li:not(.empty-placeholder)'));
+					const positions = items.map((it, i) => ({
+						id: Number(it.dataset.taskId),
+						position: i + 1
+					}));
+
+					if (positions.length > 0) {
+						await fetch('/api/tasks/reorder', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({ items: positions })
+						});
+					}
+				};
+
+				try {
+					await updatePositions(targetUl);
+					if (sourceList && sourceList !== targetUl) {
+						await updatePositions(sourceList);
+					}
+				} catch (err) {
+					console.error('Failed to update positions', err);
+				}
+
+				draggedElement = null;
+				sourceList = null;
 			});
 		});
 	});

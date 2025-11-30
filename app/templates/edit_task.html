@@ -43,6 +43,8 @@
                             Hebdomadaire</option>
                         <option value="monthly" {% if task.recurrence_pattern=='monthly' %}selected{% endif %}>Mensuelle
                         </option>
+                        <option value="yearly" {% if task.recurrence_pattern=='yearly' %}selected{% endif %}>Annuelle
+                        </option>
                     </select>
                     <div>
                         <label for="recurrence_end_date" class="mr-2">Jusqu'au</label>
@@ -88,7 +90,7 @@
     </div>
 
     <!-- Sous-tâches -->
-    <div class="card mt-6">
+    <div class="card mt-6" data-task-id="{{ task.id }}">
         <h2 class="text-lg font-semibold mb-3">Sous-tâches</h2>
         <form id="add-subtask-form" class="flex gap-2 mb-4">
             <input id="new-subtask-title" type="text" placeholder="Ajouter une sous-tâche" class="flex-1" />
@@ -113,50 +115,52 @@
 {% block scripts %}
 <script>
     (function () {
-        const taskId = {{ task.id }
-    };
-    const addForm = document.getElementById('add-subtask-form');
-    const addInput = document.getElementById('new-subtask-title');
-    const listEl = document.getElementById('subtasks-list');
+        var subtasksCard = document.querySelector('[data-task-id]');
+        var taskId = subtasksCard ? subtasksCard.getAttribute('data-task-id') : null;
+        var addForm = document.getElementById('add-subtask-form');
+        var addInput = document.getElementById('new-subtask-title');
+        var listEl = document.getElementById('subtasks-list');
 
-    if (addForm) {
-        addForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const title = (addInput.value || '').trim();
-            if (!title) return;
-            const res = await fetch(`/api/tasks/${taskId}/subtasks/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, status: 'todo' })
-            });
-            if (res.ok) {
-                location.reload();
-            }
-        });
-    }
-
-    listEl?.addEventListener('change', async (e) => {
-        const t = e.target;
-        if (t && t.matches('input[type="checkbox"][data-subtask-id]')) {
-            const sid = t.getAttribute('data-subtask-id');
-            const status = t.checked ? 'done' : 'todo';
-            await fetch(`/api/tasks/${taskId}/subtasks/${sid}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status })
+        if (addForm) {
+            addForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                var title = (addInput.value || '').trim();
+                if (!title) return;
+                var res = await fetch('/api/tasks/' + taskId + '/subtasks/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title: title, status: 'todo' })
+                });
+                if (res.ok) {
+                    location.reload();
+                }
             });
         }
-    });
 
-    listEl?.addEventListener('click', async (e) => {
-        const btn = e.target.closest('[data-delete-subtask]');
-        if (!btn) return;
-        const sid = btn.getAttribute('data-delete-subtask');
-        const res = await fetch(`/api/tasks/${taskId}/subtasks/${sid}`, { method: 'DELETE' });
-        if (res.ok) {
-            location.reload();
+        if (listEl) {
+            listEl.addEventListener('change', async function (e) {
+                var t = e.target;
+                if (t && t.matches('input[type="checkbox"][data-subtask-id]')) {
+                    var sid = t.getAttribute('data-subtask-id');
+                    var status = t.checked ? 'done' : 'todo';
+                    await fetch('/api/tasks/' + taskId + '/subtasks/' + sid, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: status })
+                    });
+                }
+            });
+
+            listEl.addEventListener('click', async function (e) {
+                var btn = e.target.closest('[data-delete-subtask]');
+                if (!btn) return;
+                var sid = btn.getAttribute('data-delete-subtask');
+                var res = await fetch('/api/tasks/' + taskId + '/subtasks/' + sid, { method: 'DELETE' });
+                if (res.ok) {
+                    location.reload();
+                }
+            });
         }
-    });
-    }) ();
+    })();
 </script>
 {% endblock %}
