@@ -185,13 +185,11 @@ def update_task(
         task.completed_at = datetime.now(timezone.utc)
 
     # Handle recurrence: on transition to done, create next occurrence
-    created_next = None
     if prev_status != "done" and task.status == "done":
-        created_next = _maybe_create_next_occurrence(db, task)
+        _maybe_create_next_occurrence(db, task)
 
     db.commit()
     db.refresh(task)
-    # We return the updated task; created_next is persisted when created
     return task
 
 
@@ -514,7 +512,6 @@ def set_subtask_positions_bulk(db: Session, task_id: int, items: list) -> list:
     sub_map = {s.id: s for s in subtasks}
 
     updated = []
-    now = datetime.now(timezone.utc)
     for it in items:
         if isinstance(it, dict):
             sid = int(it.get("id"))
